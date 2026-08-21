@@ -2,7 +2,7 @@ import BalanceCard from "../components/cards/BalanceCard";
 import ComparisonChart from "../components/charts/ComparisonChart";
 import IncomeCategoryChart from "../components/charts/IncomeCategoryChart";
 import ExpenseCategoryChart from "../components/charts/ExpenseCategoryChart";
-import RecentTransactions from "../components/tables/RecentTransactions";
+import RecentTransactions from "../components/Tables/RecentTransactions";
 
 import "../css/Dashboard.css";
 
