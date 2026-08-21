@@ -1,0 +1,170 @@
+/* =========================================
+   CHART CARDS
+========================================= */
+
+.chart-card,
+.expense-category-card {
+  width: 100%;
+  min-width: 0;
+  background: #ffffff;
+  border: 1px solid #eeeeee;
+  border-radius: 12px;
+  padding: 20px;
+  box-sizing: border-box;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.chart-card:hover,
+.expense-category-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.09);
+}
+
+/* =========================================
+   CHART HEADER (title + controls)
+========================================= */
+
+.chart-card-header,
+.expense-category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.chart-card-header h3,
+.expense-category-header h3 {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333333;
+}
+
+.chart-card-header p,
+.expense-category-header p {
+  margin: 0;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* =========================================
+   CHART AREA
+========================================= */
+
+.chart-area,
+.expense-chart-wrapper {
+  width: 100%;
+}
+
+/* =========================================
+   TOGGLE BUTTONS (PIE/BAR, Month/Year, filters)
+========================================= */
+
+.chart-controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.chart-toggle-group {
+  display: flex;
+  gap: 2px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.chart-toggle-group button {
+  border: none;
+  background: transparent;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chart-toggle-group button:hover {
+  color: #2563eb;
+}
+
+.chart-toggle-group button.active {
+  background: #ffffff;
+  color: #2563eb;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+/* =========================================
+   EMPTY STATE
+========================================= */
+
+.expense-empty {
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.expense-empty p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.expense-empty span {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* =========================================
+   RECHARTS TWEAKS
+========================================= */
+
+.recharts-cartesian-axis-tick text {
+  font-size: 11px;
+  fill: #94a3b8;
+}
+
+.recharts-legend-item-text {
+  font-size: 11px !important;
+  color: #64748b !important;
+}
+
+.recharts-default-tooltip {
+  border: none !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* =========================================
+   CHART ROWS
+========================================= */
+
+/* FULL WIDTH - एकच मोठा chart (Comparison) */
+.chart-full-row {
+  width: 100%;
+  margin-top: 20px;
+  box-sizing: border-box;
+}
+
+/* 1fr 1fr - side by side (category charts) */
+.chart-row,
+.category-chart-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}

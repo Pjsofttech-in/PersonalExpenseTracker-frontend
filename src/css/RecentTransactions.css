@@ -1,0 +1,321 @@
+/* =========================================
+   RECENT TRANSACTIONS
+========================================= */
+
+.recent-transactions-card {
+  width: 100%;
+  box-sizing: border-box;
+
+  background: #ffffff;
+
+  border: 1px solid #e1e4e8;
+
+  border-radius: 10px;
+
+  padding: 18px;
+
+  margin-top: 18px;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.recent-header {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 15px;
+}
+
+.recent-header h3 {
+  margin: 0;
+
+  font-family: "Poppins", sans-serif;
+
+  font-size: 15px;
+
+  font-weight: 600;
+
+  color: #222;
+}
+
+.recent-header p {
+  margin: 4px 0 0;
+
+  font-family: "Poppins", sans-serif;
+
+  font-size: 11px;
+
+  color: #888;
+}
+
+/* =========================================
+   VIEW ALL
+========================================= */
+
+.view-all-btn {
+  border: none;
+
+  background: #1976d2;
+
+  color: #ffffff;
+
+  padding: 7px 14px;
+
+  border-radius: 5px;
+
+  font-family: "Poppins", sans-serif;
+
+  font-size: 11px;
+
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.view-all-btn:hover {
+  background: #1565c0;
+
+  transform: translateY(-1px);
+}
+
+/* =========================================
+   TABLE WRAPPER
+========================================= */
+
+.recent-table-wrapper {
+  width: 100%;
+
+  overflow-x: auto;
+}
+
+/* =========================================
+   TABLE
+========================================= */
+
+.recent-table {
+  width: 100%;
+
+  min-width: 850px;
+
+  border-collapse: collapse;
+
+  font-family: "Poppins", sans-serif;
+}
+
+/* =========================================
+   TABLE HEADER
+========================================= */
+
+.recent-table thead th {
+  background: #f5f7fa;
+
+  color: #555;
+
+  font-size: 11px;
+
+  font-weight: 600;
+
+  text-align: left;
+
+  padding: 11px 10px;
+
+  border-bottom: 1px solid #e5e7eb;
+
+  white-space: nowrap;
+}
+
+/* =========================================
+   TABLE ROW
+========================================= */
+
+.recent-table tbody tr {
+  border-bottom: 1px solid #eeeeee;
+
+  transition: background 0.2s ease;
+}
+
+.recent-table tbody tr:hover {
+  background: #f8fbff;
+}
+
+/* =========================================
+   TABLE DATA
+========================================= */
+
+.recent-table tbody td {
+  padding: 11px 10px;
+
+  color: #444;
+
+  font-size: 11px;
+
+  white-space: nowrap;
+}
+
+/* =========================================
+   USER
+========================================= */
+
+.recent-user {
+  color: #1976d2;
+
+  font-weight: 500;
+}
+
+/* =========================================
+   AMOUNT
+========================================= */
+
+.income-amount {
+  color: #16a34a !important;
+
+  font-weight: 600;
+}
+
+.expense-amount {
+  color: #dc2626 !important;
+
+  font-weight: 600;
+}
+
+/* =========================================
+   STATUS
+========================================= */
+
+.recent-status {
+  display: inline-block;
+
+  padding: 4px 9px;
+
+  border-radius: 12px;
+
+  font-size: 10px;
+
+  font-weight: 600;
+}
+
+.recent-status.completed {
+  background: #dcfce7;
+
+  color: #15803d;
+}
+
+.recent-status.pending {
+  background: #fff3cd;
+
+  color: #b45309;
+}
+
+/* =========================================
+   ACTIONS
+========================================= */
+
+.recent-actions {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+.recent-actions button {
+  width: 27px;
+
+  height: 27px;
+
+  border: none;
+
+  border-radius: 5px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.recent-edit {
+  background: #e8f1ff;
+
+  color: #1976d2;
+}
+
+.recent-delete {
+  background: #feecec;
+
+  color: #dc2626;
+}
+
+.recent-edit:hover,
+.recent-delete:hover {
+  transform: scale(1.08);
+}
+
+/* =========================================
+   EMPTY
+========================================= */
+
+.recent-empty {
+  min-height: 150px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  text-align: center;
+}
+
+.recent-empty p {
+  margin: 0 0 5px;
+
+  color: #555;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+.recent-empty span {
+  color: #999;
+
+  font-size: 11px;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 700px) {
+  .recent-transactions-card {
+    padding: 14px;
+  }
+
+  .recent-header h3 {
+    font-size: 14px;
+  }
+
+  .recent-header p {
+    font-size: 10px;
+  }
+
+  .view-all-btn {
+    padding: 6px 10px;
+  }
+}

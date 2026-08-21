@@ -1,0 +1,439 @@
+/* =========================================================
+   LIST PAGE  (तुमची स्वतःची CSS)
+========================================================= */
+.list-page {
+  width: 100%;
+  min-height: calc(100vh - 54px);
+  background: #ffffff;
+  font-family: "Poppins", sans-serif;
+  padding: 10px 10px 25px;
+  box-sizing: border-box;
+}
+
+.list-search-section {
+  width: 100%;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.list-search-section input {
+  flex: 1;
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid #bdbdbd;
+  border-radius: 6px;
+  outline: none;
+  font-family: "Poppins", sans-serif;
+  font-size: 12px;
+  color: #333;
+}
+
+.list-search-section input:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.08);
+}
+
+.list-search-section button {
+  height: 38px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 6px;
+  background: #eeeeee;
+  color: #555;
+  font-family: "Poppins", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.list-search-section button:hover {
+  background: #dddddd;
+}
+
+.filter-section {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.filter-section select {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid #bdbdbd;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #555;
+  font-family: "Poppins", sans-serif;
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+}
+
+.filter-section select:focus {
+  border-color: #1976d2;
+}
+
+.list-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap; /* एकाच ओळीत - wrap नाही */
+  gap: 6px;
+  margin: 8px 0 12px;
+  overflow-x: auto; /* कधी अरुंद झालं तर scroll, दुसरी ओळ नाही */
+  padding-bottom: 4px;
+}
+
+.summary {
+  border: none;
+  border-radius: 16px;
+  padding: 6px 12px;
+  color: #ffffff;
+  font-family: "Poppins", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.summary.blue {
+  background: #168bd2;
+}
+.summary.purple {
+  background: #9c27b0;
+}
+.summary.green {
+  background: #2fc43f;
+}
+.summary.orange {
+  background: #ff8700;
+}
+.summary.future {
+  background: #7b61c9;
+}
+.summary.pink {
+  background: #d52db7;
+}
+.summary.income {
+  background: #2ec43b;
+}
+
+.list-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.download-btn,
+.check-btn {
+  height: 28px;
+  border: none;
+  border-radius: 4px;
+  padding: 0 12px;
+  color: white;
+  font-family: "Poppins", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.download-btn {
+  background: #1976d2;
+}
+
+.download-btn:hover {
+  background: #1565c0;
+}
+
+.check-btn {
+  background: #42a5f5;
+}
+
+.check-btn:hover {
+  background: #1e88e5;
+}
+
+.list-table-wrapper {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 7px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: #ffffff;
+}
+
+.list-table {
+  width: max-content;
+  min-width: 100%;
+}
+
+.list-table-header {
+  min-width: 1940px;
+  height: 40px;
+  display: grid;
+  grid-template-columns:
+    55px 90px 100px 130px 140px 85px 80px 80px 100px
+    80px 90px 110px 90px 90px 105px 105px 120px 85px 110px;
+  align-items: center;
+  background: #6495ed;
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.list-table-row {
+  min-width: 1940px;
+  min-height: 45px;
+  display: grid;
+  grid-template-columns:
+    55px 90px 100px 130px 140px 85px 80px 80px 100px
+    80px 90px 110px 90px 90px 105px 105px 120px 85px 110px;
+  align-items: center;
+  text-align: center;
+  font-size: 10px;
+  color: #333;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.list-table-row:nth-child(even) {
+  background: #eaf5ea;
+}
+
+.list-table-row:nth-child(odd) {
+  background: #ffffff;
+}
+
+.list-table-row:hover {
+  background: #e8f1ff;
+}
+
+.user-link {
+  color: #1976d2;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.pending-value {
+  color: #d97706;
+  font-weight: 600;
+}
+
+.future-pending-value {
+  color: #7c3aed;
+  font-weight: 600;
+}
+
+.status-complete {
+  display: inline-block;
+  color: #20b33b;
+  font-weight: 600;
+  font-size: 10px;
+}
+
+.status-installment {
+  display: inline-block;
+  background: #ff8500;
+  color: white;
+  padding: 5px 8px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.status-installment:hover {
+  background: #e67600;
+}
+
+.status-refund {
+  display: inline-block;
+  background: #d52db7;
+  color: white;
+  padding: 5px 8px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.created-by {
+  display: inline-block;
+  background: #2388d8;
+  color: white;
+  padding: 5px 9px;
+  border-radius: 14px;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.document-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.document-btn {
+  border: none;
+  border-radius: 5px;
+  padding: 5px 7px;
+  color: white;
+  font-family: "Poppins", sans-serif;
+  font-size: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.invoice-btn {
+  background: #1976d2;
+}
+
+.invoice-btn:hover {
+  background: #1565c0;
+}
+
+.receipt-btn {
+  background: #16a34a;
+}
+
+.receipt-btn:hover {
+  background: #15803d;
+}
+
+.row-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
+
+.row-actions button {
+  width: 27px;
+  height: 27px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.edit-action:hover {
+  transform: scale(1.15);
+}
+
+.delete-action:hover {
+  transform: scale(1.15);
+}
+
+.empty-list {
+  min-width: 1940px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #777;
+  font-size: 13px;
+  background: #ffffff;
+}
+
+.list-table-wrapper::-webkit-scrollbar {
+  height: 9px;
+}
+
+.list-table-wrapper::-webkit-scrollbar-track {
+  background: #eeeeee;
+  border-radius: 10px;
+}
+
+.list-table-wrapper::-webkit-scrollbar-thumb {
+  background: #a8a8a8;
+  border-radius: 10px;
+}
+
+.list-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #777777;
+}
+
+@media (max-width: 1100px) {
+  .filter-section {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 750px) {
+  .filter-section {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .list-page {
+    padding: 8px;
+  }
+
+  .list-summary {
+    gap: 5px;
+  }
+
+  .list-search-section {
+    flex-direction: column;
+  }
+
+  .list-search-section button {
+    width: 80px;
+  }
+}
+
+@media (max-width: 500px) {
+  .filter-section {
+    grid-template-columns: 1fr;
+  }
+
+  .list-buttons {
+    flex-wrap: wrap;
+  }
+}
+
+/* =========================================================
+   CUSTOM DATE RANGE (Timeframe -> Custom)
+========================================================= */
+
+.custom-range {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.custom-range label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Poppins", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+}
+
+.custom-range input {
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid #bdbdbd;
+  border-radius: 6px;
+  font-family: "Poppins", sans-serif;
+  font-size: 12px;
+  color: #333;
+  outline: none;
+  background: #ffffff;
+}
+
+.custom-range input:focus {
+  border-color: #1976d2;
+}

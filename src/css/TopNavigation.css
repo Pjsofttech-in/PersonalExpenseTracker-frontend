@@ -1,0 +1,134 @@
+/* =========================================
+   TOP NAVIGATION
+========================================= */
+
+.top-navigation {
+  width: 100%;
+  height: 54px;
+
+  background: #6598e8;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 25px;
+  gap: 20px;
+
+  box-sizing: border-box;
+
+  border-bottom: 1px solid #d9d9d9;
+
+  font-family: "Poppins", sans-serif;
+}
+
+/* =========================================
+   NAVIGATION LINKS
+========================================= */
+
+.nav-button {
+  min-width: 160px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 18px;
+
+  box-sizing: border-box;
+
+  border-radius: 20px;
+
+  text-decoration: none;
+
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+
+  white-space: nowrap;
+}
+
+/* =========================================
+   HOVER
+========================================= */
+
+.nav-button:hover {
+  background: rgba(255, 255, 255, 0.16);
+
+  color: #ffffff;
+}
+
+/* =========================================
+   ACTIVE PAGE
+========================================= */
+
+.nav-button.active {
+  background: #ffffff;
+
+  color: #222222;
+
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+
+/* =========================================
+   ACTIVE HOVER
+========================================= */
+
+.nav-button.active:hover {
+  background: #ffffff;
+
+  color: #222222;
+}
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 900px) {
+  .top-navigation {
+    padding: 0 12px;
+
+    gap: 8px;
+  }
+
+  .nav-button {
+    min-width: auto;
+
+    padding: 0 14px;
+
+    font-size: 12px;
+  }
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+  .top-navigation {
+    height: auto;
+
+    min-height: 54px;
+
+    padding: 7px;
+
+    gap: 5px;
+
+    overflow-x: auto;
+  }
+
+  .nav-button {
+    flex-shrink: 0;
+
+    min-width: 125px;
+
+    height: 40px;
+
+    font-size: 11px;
+  }
+}

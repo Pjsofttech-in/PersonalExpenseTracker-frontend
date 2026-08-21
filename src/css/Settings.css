@@ -1,0 +1,762 @@
+/* =========================================
+   SETTINGS PAGE
+========================================= */
+
+.settings-page {
+  min-height: 100vh;
+  width: 100%;
+  background: #f5f7fb;
+  font-family: "Poppins", sans-serif;
+}
+
+/* =========================================
+   SETTINGS CONTENT
+========================================= */
+
+.settings-content {
+  display: flex;
+  width: 100%;
+  min-height: calc(100vh - 54px);
+  gap: 18px;
+  padding: 10px 18px 25px;
+  box-sizing: border-box;
+  align-items: flex-start;
+}
+
+/* =========================================
+   LEFT SETTINGS MENU
+========================================= */
+
+.settings-menu {
+  width: 230px;
+  min-width: 230px;
+
+  background: #6495ed;
+
+  border-radius: 0 28px 28px 0;
+
+  padding: 8px 6px;
+
+  display: flex;
+  flex-direction: column;
+
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+
+  overflow: hidden;
+
+  transition: all 0.3s ease;
+}
+
+/* Menu Button */
+
+.settings-menu button {
+  width: 100%;
+  height: 52px;
+
+  border: none;
+  background: transparent;
+
+  display: flex;
+  align-items: center;
+
+  gap: 15px;
+
+  padding: 0 18px;
+
+  border-radius: 26px;
+
+  color: white;
+
+  font-size: 15px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+
+  white-space: nowrap;
+}
+
+/* Icons */
+
+.settings-menu button svg {
+  min-width: 20px;
+  font-size: 18px;
+}
+
+/* Hover */
+
+.settings-menu button:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* Active */
+
+.settings-menu button.menu-active {
+  background: white;
+  color: #222;
+
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* =========================================
+   COLLAPSED SIDEBAR
+========================================= */
+
+.settings-menu:not(:hover) {
+  width: 55px;
+  min-width: 55px;
+}
+
+.settings-menu:not(:hover) button span {
+  display: none;
+}
+
+.settings-menu:not(:hover) button {
+  justify-content: center;
+  padding: 0;
+  gap: 0;
+}
+
+/* =========================================
+   MAIN CONTENT
+========================================= */
+
+.settings-main {
+  flex: 1;
+  min-width: 0;
+
+  background: #ffffff;
+
+  border: 1px solid #e1e5eb;
+
+  border-radius: 10px;
+
+  padding: 22px;
+
+  box-sizing: border-box;
+
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+}
+
+.settings-section {
+  width: 100%;
+}
+
+/* =========================================
+   SECTION TOP
+========================================= */
+
+.section-top {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 22px;
+}
+
+.section-top h2 {
+  margin: 0 0 4px;
+
+  color: #222;
+
+  font-size: 21px;
+
+  font-weight: 600;
+}
+
+.section-top p {
+  margin: 0;
+
+  color: #777;
+
+  font-size: 13px;
+}
+
+/* =========================================
+   ADD BUTTON
+========================================= */
+
+.add-btn {
+  height: 42px;
+
+  padding: 0 18px;
+
+  border: none;
+
+  border-radius: 6px;
+
+  background: #1976d2;
+
+  color: white;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 8px;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.add-btn:hover {
+  background: #1565c0;
+
+  transform: translateY(-1px);
+}
+
+/* =========================================
+   SEARCH
+========================================= */
+
+.search-total {
+  display: flex;
+
+  align-items: center;
+
+  gap: 15px;
+
+  margin-bottom: 18px;
+}
+
+.search-total input {
+  width: 270px;
+
+  height: 42px;
+
+  border: 1px solid #cfd4dc;
+
+  border-radius: 7px;
+
+  padding: 0 14px;
+
+  box-sizing: border-box;
+
+  outline: none;
+
+  font-family: inherit;
+
+  font-size: 13px;
+}
+
+.search-total input:focus {
+  border-color: #1976d2;
+
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.08);
+}
+
+/* =========================================
+   TOTAL BADGE
+========================================= */
+
+.total-badge {
+  height: 42px;
+
+  padding: 0 16px;
+
+  display: flex;
+
+  align-items: center;
+
+  border: 1px solid #1976d2;
+
+  border-radius: 22px;
+
+  color: #1976d2;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+/* =========================================
+   TABLE
+========================================= */
+
+.settings-table {
+  width: 100%;
+
+  border: 1px solid #ddd;
+
+  border-radius: 8px;
+
+  overflow-x: auto;
+
+  overflow-y: hidden;
+}
+
+/* Common Grid */
+
+.table-head,
+.table-data {
+  min-width: 700px;
+
+  display: grid;
+
+  align-items: center;
+
+  text-align: center;
+}
+
+/* Category */
+
+.category-grid {
+  grid-template-columns: 80px 1fr 180px;
+}
+
+/* User */
+
+.user-grid {
+  grid-template-columns:
+    60px
+    1fr
+    180px
+    250px
+    150px;
+}
+
+/* Bank */
+
+.bank-grid {
+  grid-template-columns:
+    70px
+    1fr
+    1.2fr
+    1.3fr
+    130px
+    130px
+    140px;
+}
+
+/* Table Head */
+
+.table-head {
+  min-height: 42px;
+
+  background: #6495ed;
+
+  color: white;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+/* Table Data */
+
+.table-data {
+  min-height: 50px;
+
+  border-bottom: 1px solid #eeeeee;
+
+  color: #333;
+
+  font-size: 13px;
+
+  background: #ffffff;
+}
+
+.table-data:nth-child(odd) {
+  background: #fafafa;
+}
+
+.table-data:hover {
+  background: #eef5ff;
+}
+
+.table-data:last-child {
+  border-bottom: none;
+}
+
+/* =========================================
+   ACTIONS
+========================================= */
+
+.actions {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 18px;
+}
+
+.edit-icon,
+.delete-icon {
+  cursor: pointer;
+
+  font-size: 15px;
+
+  transition: 0.2s;
+}
+
+.edit-icon {
+  color: #2563eb;
+}
+
+.edit-icon:hover {
+  transform: scale(1.15);
+
+  color: #1d4ed8;
+}
+
+.delete-icon {
+  color: #dc2626;
+}
+
+.delete-icon:hover {
+  transform: scale(1.15);
+
+  color: #b91c1c;
+}
+
+/* =========================================
+   EMPTY
+========================================= */
+
+.empty-row {
+  min-height: 80px;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  color: #888;
+
+  font-size: 13px;
+}
+
+/* =========================================
+   POPUP OVERLAY
+========================================= */
+
+.settings-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  background: rgba(0, 0, 0, 0.45);
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  z-index: 9999;
+
+  padding: 20px;
+
+  box-sizing: border-box;
+}
+
+/* =========================================
+   POPUP
+========================================= */
+
+.settings-modal {
+  width: 500px;
+
+  max-width: 100%;
+
+  max-height: 90vh;
+
+  overflow-y: auto;
+
+  background: white;
+
+  border-radius: 12px;
+
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.25);
+
+  animation: popupShow 0.2s ease;
+}
+
+@keyframes popupShow {
+  from {
+    opacity: 0;
+
+    transform: scale(0.95) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* =========================================
+   MODAL HEADER
+========================================= */
+
+.modal-header {
+  height: 65px;
+
+  padding: 0 22px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  border-bottom: 1px solid #eeeeee;
+
+  box-sizing: border-box;
+}
+
+.modal-header h2 {
+  margin: 0;
+
+  font-size: 19px;
+
+  color: #222;
+
+  font-weight: 600;
+}
+
+.close-btn {
+  width: 35px;
+
+  height: 35px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: #f3f4f6;
+
+  color: #555;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  cursor: pointer;
+
+  font-size: 15px;
+}
+
+.close-btn:hover {
+  background: #fee2e2;
+
+  color: #dc2626;
+}
+
+/* =========================================
+   MODAL FORM
+========================================= */
+
+.modal-form {
+  padding: 22px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+
+  box-sizing: border-box;
+}
+
+.modal-form label {
+  color: #444;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  margin-top: 5px;
+}
+
+.modal-form input,
+.modal-form select {
+  width: 100%;
+
+  height: 42px;
+
+  border: 1px solid #cfd4dc;
+
+  border-radius: 7px;
+
+  padding: 0 12px;
+
+  box-sizing: border-box;
+
+  outline: none;
+
+  font-family: inherit;
+
+  font-size: 13px;
+
+  background: white;
+}
+
+.modal-form input:focus,
+.modal-form select:focus {
+  border-color: #1976d2;
+
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.08);
+}
+
+/* =========================================
+   BANK FORM
+========================================= */
+
+.bank-form {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  column-gap: 15px;
+
+  row-gap: 8px;
+}
+
+.bank-form label {
+  align-self: end;
+}
+
+.bank-form input,
+.bank-form select {
+  margin-bottom: 5px;
+}
+
+.bank-form label:nth-of-type(1),
+.bank-form input:nth-of-type(1),
+.bank-form label:nth-of-type(2),
+.bank-form input:nth-of-type(2) {
+  grid-column: span 1;
+}
+
+/* =========================================
+   MODAL BUTTONS
+========================================= */
+
+.modal-buttons {
+  padding: 0 22px 22px;
+
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 12px;
+}
+
+.modal-buttons button {
+  height: 40px;
+
+  padding: 0 20px;
+
+  border: none;
+
+  border-radius: 6px;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background: #eeeeee;
+
+  color: #444;
+}
+
+.cancel-btn:hover {
+  background: #dddddd;
+}
+
+.save-btn {
+  background: #1976d2;
+
+  color: white;
+}
+
+.save-btn:hover {
+  background: #1565c0;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 900px) {
+  .settings-content {
+    padding: 10px;
+  }
+
+  .settings-menu {
+    width: 55px;
+    min-width: 55px;
+  }
+
+  .settings-menu span {
+    display: none;
+  }
+
+  .settings-menu button {
+    justify-content: center;
+    padding: 0;
+    gap: 0;
+  }
+
+  .section-top {
+    align-items: flex-start;
+
+    gap: 15px;
+  }
+
+  .search-total {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 600px) {
+  .settings-main {
+    padding: 15px;
+  }
+
+  .section-top {
+    flex-direction: column;
+  }
+
+  .add-btn {
+    width: 100%;
+  }
+
+  .search-total input {
+    width: 100%;
+  }
+
+  .total-badge {
+    width: fit-content;
+  }
+
+  .settings-modal {
+    width: 100%;
+  }
+
+  .bank-form {
+    grid-template-columns: 1fr;
+  }
+}
