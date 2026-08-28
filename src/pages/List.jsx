@@ -91,50 +91,50 @@ export default function List() {
         navigate(`/expense/edit/${expense.id}`);
     };
     const handleDeleteExpense = async (expense) => {
-    if (!expense?.id) return;
+        if (!expense?.id) return;
 
-    const confirmed = window.confirm(
-        `Are you sure you want to delete this expense?\n\n` +
-        `Contact: ${expense.contact?.name || "—"}\n` +
-        `Amount: ₹${fmt(expense.total)}\n\n` +
-        `This will permanently delete the expense and its installment/payment records.`
-    );
-
-    if (!confirmed) return;
-
-    try {
-        setLoading(true);
-
-        await api.delete(`/pjsofttech/expense/${expense.id}`);
-
-        alert("Expense deleted successfully.");
-
-        // Refresh list
-        await fetchData();
-
-        // Prevent being left on an empty page after deletion
-        setCurrentPage((current) => {
-            const remainingItems = filteredExpenses.length - 1;
-            const newTotalPages = Math.max(
-                1,
-                Math.ceil(remainingItems / itemsPerPage)
-            );
-
-            return Math.min(current, newTotalPages);
-        });
-
-    } catch (err) {
-        console.error("Delete expense error:", err);
-
-        alert(
-            err.response?.data?.error ||
-            err.response?.data?.message ||
-            "Failed to delete expense."
+        const confirmed = window.confirm(
+            `Are you sure you want to delete this expense?\n\n` +
+            `Contact: ${expense.contact?.name || "—"}\n` +
+            `Amount: ₹${fmt(expense.total)}\n\n` +
+            `This will permanently delete the expense and its installment/payment records.`
         );
-    } finally {
-        setLoading(false);
-    }
-};
+
+        if (!confirmed) return;
+
+        try {
+            setLoading(true);
+
+            await api.delete(`/pjsofttech/expense/${expense.id}`);
+
+            alert("Expense deleted successfully.");
+
+            // Refresh list
+            await fetchData();
+
+            // Prevent being left on an empty page after deletion
+            setCurrentPage((current) => {
+                const remainingItems = filteredExpenses.length - 1;
+                const newTotalPages = Math.max(
+                    1,
+                    Math.ceil(remainingItems / itemsPerPage)
+                );
+
+                return Math.min(current, newTotalPages);
+            });
+
+        } catch (err) {
+            console.error("Delete expense error:", err);
+
+            alert(
+                err.response?.data?.error ||
+                err.response?.data?.message ||
+                "Failed to delete expense."
+            );
+        } finally {
+            setLoading(false);
+        }
+    };
 
 
 
@@ -414,7 +414,7 @@ export default function List() {
     const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
 
     const paginatedExpenses = filteredExpenses.slice(startIndex, endIndex);
-    
+
 
     // ─────────────────────────────────────────────────────────────
     // UI
@@ -424,7 +424,7 @@ export default function List() {
         <div className="min-h-screen bg-gray-50 p-5 space-y-4">
 
             {/* ── Filter row ── */}
-            <div className="bg-white rounded-lg shadow-sm p-4">
+            <div className="flex gap-3 bg-white rounded-lg shadow-sm p-4">
                 <input
                     className="w-full max-w-sm rounded-lg border border-slate-500 px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-slate-300"
                     placeholder="Search by contact, category or particular..."
@@ -440,6 +440,24 @@ export default function List() {
                 />
             </div>
 
+
+
+            {/* ── Stat badges ── */}
+            <div className="flex flex-wrap gap-2">
+                <StatBadge label="Total GST" value={stats.gst} color="#4A90D9" />
+                <StatBadge label="Total TDS" value={stats.tds} color="#E91E63" />
+                <StatBadge label="Paid" value={stats.paid} color="#FF9800" />
+                <StatBadge label="Pending" value={stats.pending} color="#4CAF50" />
+                <StatBadge label="Total Expense" value={stats.expenseRefund} color="#2196F3" />
+                <StatBadge label="Total Income" value={stats.income} color="#4A90D9" />
+            </div>
+
+            {/* ── Check Mark row ── */}
+            {/* <div>
+                <button className="bg-[#4A90D9] hover:bg-[#3a7fc1] text-white text-sm font-semibold px-5 py-2 rounded shadow transition-colors">
+                    Check Mark Transactions
+                </button>
+            </div> */}
             {/* ── Actions + Stats ── */}
             <div className="flex flex-wrap items-center gap-3">
                 <button
@@ -460,23 +478,6 @@ export default function List() {
                 </button>
             </div>
 
-            {/* ── Stat badges ── */}
-            <div className="flex flex-wrap gap-2">
-                <StatBadge label="Total GST" value={stats.gst} color="#4A90D9" />
-                <StatBadge label="Total TDS" value={stats.tds} color="#E91E63" />
-                <StatBadge label="Paid" value={stats.paid} color="#FF9800" />
-                <StatBadge label="Pending" value={stats.pending} color="#4CAF50" />
-                <StatBadge label="Total Expense" value={stats.expenseRefund} color="#2196F3" />
-                <StatBadge label="Total Income" value={stats.income} color="#4A90D9" />
-            </div>
-
-            {/* ── Check Mark row ── */}
-            <div>
-                <button className="bg-[#4A90D9] hover:bg-[#3a7fc1] text-white text-sm font-semibold px-5 py-2 rounded shadow transition-colors">
-                    Check Mark Transactions
-                </button>
-            </div>
-
             {/* ── Table ── */}
             {loading ? (
                 <div className="flex items-center justify-center py-20 text-sm text-gray-400">
@@ -489,7 +490,7 @@ export default function List() {
                         onPayInstallment={openPaymentModal}
                         onViewInstallments={openInstallmentDialog}
                         onEdit={handleEditExpense}
-                            onDelete={handleDeleteExpense}
+                        onDelete={handleDeleteExpense}
 
                     />
                     {/* Pagination */}
