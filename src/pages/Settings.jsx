@@ -77,8 +77,8 @@ const ActionBtn = ({ onClick, icon: Icon, danger }) => (
     <button
         onClick={onClick}
         className={`w-7 h-7 rounded flex items-center justify-center transition-colors ${danger
-                ? "text-red-500 hover:bg-red-50"
-                : "text-blue-500 hover:bg-blue-50"
+            ? "text-red-500 hover:bg-red-50"
+            : "text-blue-500 hover:bg-blue-50"
             }`}
     >
         <Icon className="w-3.5 h-3.5" />
@@ -335,9 +335,9 @@ export default function Settings() {
     const confirmDelete = async () => {
         const { type, id } = deleteDialog;
         if (!id) {
-        alert("Invalid contact ID");
-        return;
-    }
+            alert("Invalid contact ID");
+            return;
+        }
         try {
             setLoading(true);
             if (type === "contact") {
@@ -415,8 +415,8 @@ export default function Settings() {
                                 setShowBankForm(false);
                             }}
                             className={`px-8 py-3 text-sm font-medium transition-colors border-b-2 ${activeTab === tab
-                                    ? "border-[#4A90D9] text-[#4A90D9] bg-blue-50"
-                                    : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                                ? "border-[#4A90D9] text-[#4A90D9] bg-blue-50"
+                                : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                                 }`}
                         >
                             {tab}
@@ -709,7 +709,6 @@ export default function Settings() {
                             { label: "Branch", key: "branch", placeholder: "Branch name" },
                             { label: "Account Number", key: "accountNumber", placeholder: "Account number" },
                             { label: "IFSC Code", key: "ifsc", placeholder: "e.g. HDFC0001234" },
-                            { label: "Account Type", key: "accountType", placeholder: "e.g. Savings / Current" },
                         ].map(({ label, key, placeholder }) => (
                             <FormField key={key} label={label}>
                                 <StyledInput
@@ -719,7 +718,25 @@ export default function Settings() {
                                     required
                                 />
                             </FormField>
+
                         ))}
+                        <FormField label="Account Type">
+                            <select
+                                value={bank.accountType}
+                                onChange={(e) =>
+                                    setBank({
+                                        ...bank,
+                                        accountType: e.target.value,
+                                    })
+                                }
+                                required
+                                className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#4A90D9] focus:border-transparent"
+                            >
+                                <option value="">Select account type</option>
+                                <option value="SAVINGS">SAVINGS</option>
+                                <option value="CURRENT">CURRENT</option>
+                            </select>
+                        </FormField>
                         <div className="flex justify-end gap-2 pt-1">
                             <OutlineBtn onClick={() => { setBank(emptyBank); setShowBankForm(false); }}>Cancel</OutlineBtn>
                             <BlueBtn type="submit" disabled={loading}>
