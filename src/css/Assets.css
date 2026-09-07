@@ -51,3 +51,217 @@
   font-weight: 400;
   font-size: 10px;
 }
+
+/* =========================================================
+   FINANCIALS HOME — 3 options + categories
+   ========================================================= */
+
+.fin-pills {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.fin-pill {
+  flex: 1;
+  min-width: 150px;
+  padding: 10px 14px;
+  border: 1px solid #c8c8c8;
+  border-radius: 8px;
+  background: #fff;
+  color: #444;
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.fin-pill:hover {
+  border-color: #1976d2;
+  color: #1976d2;
+}
+
+.fin-pill.active {
+  background: #1976d2;
+  border-color: #1976d2;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3);
+}
+
+.fin-category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fin-category-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid #e0e6ee;
+  border-radius: 8px;
+}
+
+.fin-category-name {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.fin-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #eaf2fd;
+  color: #1976d2;
+  border: 1px solid #bcd4f5;
+  border-radius: 6px;
+  font-family: "Poppins", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.fin-add-btn:hover {
+  background: #1976d2;
+  color: #fff;
+  border-color: #1976d2;
+}
+
+/* REAL DATA rows (pills मधला backend data) */
+
+.fin-real-head {
+  margin: 18px 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.fin-real-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid #e0e6ee;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.fin-real-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  flex: 1;
+}
+
+.fin-real-type {
+  font-size: 12px;
+  color: #666;
+  background: #f2f5f9;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.fin-real-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1976d2;
+}
+
+.fin-empty {
+  padding: 14px;
+  text-align: center;
+  color: #888;
+  font-size: 13px;
+  background: #fafbfd;
+  border: 1px dashed #d5dde7;
+  border-radius: 8px;
+}
+
+/* =========================================================
+   FINANCIALS — transaction list (pills मधून)
+   ========================================================= */
+
+/* Total — pills च्या बरोबर शेवटी */
+
+.fin-list-total {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1976d2;
+  background: #eaf2fd;
+  border: 1px solid #bcd4f5;
+  border-radius: 6px;
+  padding: 5px 12px;
+}
+
+.fin-txn-grid {
+  display: grid;
+  grid-template-columns: 110px 1fr 1.4fr 120px;
+  gap: 8px;
+  align-items: center;
+}
+
+.fin-amount-expense {
+  color: #d32f2f;
+  font-weight: 600;
+}
+
+.fin-amount-income {
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+/* EMPTY STATE — professional */
+
+.fin-empty-state {
+  min-width: 1940px;
+  padding: 42px 0 38px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: #ffffff;
+}
+
+.fin-empty-icon {
+  font-size: 38px;
+  color: #aebccd;
+  margin-bottom: 8px;
+}
+
+.fin-empty-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #475569;
+  margin: 0;
+}
+
+.fin-empty-text {
+  font-size: 12px;
+  color: #8a97a8;
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .fin-txn-grid {
+    grid-template-columns: 90px 1fr 100px;
+  }
+
+  .fin-txn-grid span:nth-child(3) {
+    display: none;
+  }
+}

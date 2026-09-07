@@ -1,15 +1,12 @@
 import { useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { FaUserCircle, FaSignOutAlt, FaSignInAlt } from "react-icons/fa";
+import { NavLink } from "react-router-dom";
 
-import { getCurrentUser, logoutUser, AUTH_ENABLED } from "../../utils/auth";
+import { getCurrentUser, AUTH_ENABLED } from "../../utils/auth";
 
 import "../../css/TopNavigation.css";
 
 function TopNavigation() {
-  const navigate = useNavigate();
-
-  // CURRENT USER (login / logout वर update होते)
+  // CURRENT USER (login वर update होते)
 
   const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
 
@@ -26,14 +23,6 @@ function TopNavigation() {
       window.removeEventListener("storage", syncUser);
     };
   }, []);
-
-  // LOGOUT
-
-  const handleLogout = () => {
-    logoutUser();
-
-    navigate("/login");
-  };
 
   // NAV LINKS — AUTH_ENABLED false असताना
   // login नसलं तरी दिसतात
@@ -61,7 +50,7 @@ function TopNavigation() {
           </NavLink>
 
           <NavLink to="/assets" className="nav-button">
-            Investment
+            Financials
           </NavLink>
 
           <NavLink to="/settings" className="nav-button">
@@ -69,19 +58,6 @@ function TopNavigation() {
           </NavLink>
         </div>
       )}
-
-      {/* RIGHT SIDE — user badge + logout / login */}
-
-      <div className="nav-right">
-        {currentUser ? (
-          <></>
-        ) : (
-          <NavLink to="/login" className="nav-login-link">
-            <FaSignInAlt />
-            Login
-          </NavLink>
-        )}
-      </div>
     </div>
   );
 }

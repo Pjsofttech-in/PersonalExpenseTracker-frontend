@@ -17,10 +17,14 @@ import { apiGetAssets, apiGetLiabilities } from "../../utils/api";
 
 import "../../css/Charts.css";
 
-function AssetsLiabilityChart({ timeframe = "Monthly" }) {
+function AssetsLiabilityChart() {
   const [chartType, setChartType] = useState("BAR");
 
   const [typeFilter, setTypeFilter] = useState("All");
+
+  const [timeframe, setTimeframe] = useState("");
+
+  const activeTimeframe = timeframe || "Monthly";
 
   const [assets, setAssets] = useState([]);
 
@@ -73,8 +77,12 @@ function AssetsLiabilityChart({ timeframe = "Monthly" }) {
        VALUE HELPERS
      ========================= */
 
+  // Asset ची आजची किंमत (currentValue नाही तर purchaseValue)
+
   const getAssetValue = (asset) =>
     Number(asset.currentValue || asset.purchaseValue || 0);
+
+  // Liability ची बाकी रक्कम (outstandingAmount नाही तर principalAmount)
 
   const getLiabilityValue = (liability) =>
     Number(liability.outstandingAmount || liability.principalAmount || 0);
@@ -260,17 +268,17 @@ function AssetsLiabilityChart({ timeframe = "Monthly" }) {
   let data = monthData;
   let xKey = "month";
 
-  if (timeframe === "Yearly") {
+  if (activeTimeframe === "Yearly") {
     data = yearData;
     xKey = "year";
   }
 
-  if (timeframe === "Weekly") {
+  if (activeTimeframe === "Weekly") {
     data = weeklyData;
     xKey = "period";
   }
 
-  if (timeframe === "All") {
+  if (activeTimeframe === "All") {
     data = allData;
     xKey = "period";
   }
@@ -282,9 +290,9 @@ function AssetsLiabilityChart({ timeframe = "Monthly" }) {
   const showNet = typeFilter === "All";
 
   const title =
-    timeframe === "Monthly"
+    activeTimeframe === "Monthly"
       ? "Assets & Liabilities Comparison"
-      : `Assets & Liabilities - ${timeframe}`;
+      : `Assets & Liabilities - ${activeTimeframe}`;
 
   return (
     <div className="chart-card">
@@ -333,19 +341,33 @@ function AssetsLiabilityChart({ timeframe = "Monthly" }) {
             Liabilities Only
           </button>
         </div>
+
+        <select
+          className="chart-timeframe-select"
+          value={timeframe}
+          onChange={(e) => setTimeframe(e.target.value)}
+        >
+          <option value="" disabled hidden>
+            Timeframe
+          </option>
+
+          <option value="Monthly">Monthly</option>
+
+          <option value="Weekly">Weekly</option>
+
+          <option value="Yearly">Yearly</option>
+
+          <option value="All">All Time</option>
+        </select>
       </div>
 
       {loadError ? (
         <div className="expense-empty">
           <p>Could not load assets / liabilities</p>
-          <span>
-            Backend चालू आहे का? Login refresh करा (token expire झाला असेल).
-          </span>
         </div>
       ) : !hasData ? (
         <div className="expense-empty">
           <p>No asset / liability data available</p>
-          <span>Backend मध्ये अजून assets / liabilities add झालेले नाहीत.</span>
         </div>
       ) : (
         <div className="chart-area">

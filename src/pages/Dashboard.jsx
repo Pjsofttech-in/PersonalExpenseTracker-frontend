@@ -10,9 +10,6 @@ import { loadTransactionsFromBackend } from "../utils/backendData";
 import "../css/Dashboard.css";
 
 function Dashboard() {
-  const [timeframe, setTimeframe] = useState("");
-
-  const activeTimeframe = timeframe || "Monthly";
   const [transactions, setTransactions] = useState([]);
 
   const loadTransactions = async () => {
@@ -53,29 +50,23 @@ function Dashboard() {
         ========================= */}
 
         <div className="chart-full-row">
-          <ComparisonChart
-            timeframe={activeTimeframe}
-            transactions={transactions}
-            onTimeframeChange={setTimeframe}
-          />
-        </div>
-
-        <div className="chart-full-row">
-          <AssetsLiabilityChart
-            timeframe={activeTimeframe}
-            transactions={transactions}
-          />
+          <ComparisonChart transactions={transactions} />
         </div>
 
         {/* =========================
-            CATEGORY CHART (एकत्रित — Income / Expense / Assets & Liabilities)
+            ASSETS & LIABILITIES COMPARISON
         ========================= */}
 
         <div className="chart-full-row">
-          <IncomeCategoryChart
-            timeframe={activeTimeframe}
-            transactions={transactions}
-          />
+          <AssetsLiabilityChart />
+        </div>
+
+        {/* =========================
+            CATEGORY CHART 
+        ========================= */}
+
+        <div className="chart-full-row">
+          <IncomeCategoryChart transactions={transactions} />
         </div>
 
         <RecentTransactions />

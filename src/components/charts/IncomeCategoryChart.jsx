@@ -15,10 +15,14 @@ import {
 
 import "../../css/Charts.css";
 
-function IncomeCategoryChart({ timeframe = "Monthly", transactions = [] }) {
+function IncomeCategoryChart({ transactions = [] }) {
   const [view, setView] = useState("INCOME");
 
   const [chartMode, setChartMode] = useState("PIE");
+
+  const [timeframe, setTimeframe] = useState("");
+
+  const activeTimeframe = timeframe || "Monthly";
 
   const getAmount = (item) => Number(item.total || item.amount || 0);
 
@@ -45,11 +49,11 @@ function IncomeCategoryChart({ timeframe = "Monthly", transactions = [] }) {
   =========================*/
 
   const filteredTransactions = useMemo(() => {
-    if (timeframe === "All") {
+    if (activeTimeframe === "All") {
       return transactions;
     }
 
-    if (timeframe === "Yearly") {
+    if (activeTimeframe === "Yearly") {
       return transactions.filter((item) => {
         const date = getDate(item);
 
@@ -57,7 +61,7 @@ function IncomeCategoryChart({ timeframe = "Monthly", transactions = [] }) {
       });
     }
 
-    if (timeframe === "Monthly") {
+    if (activeTimeframe === "Monthly") {
       return transactions.filter((item) => {
         const date = getDate(item);
 
@@ -69,7 +73,7 @@ function IncomeCategoryChart({ timeframe = "Monthly", transactions = [] }) {
       });
     }
 
-    if (timeframe === "Weekly") {
+    if (activeTimeframe === "Weekly") {
       const weekStart = new Date(today);
       weekStart.setDate(today.getDate() - today.getDay());
 
@@ -85,7 +89,7 @@ function IncomeCategoryChart({ timeframe = "Monthly", transactions = [] }) {
     }
 
     return transactions;
-  }, [transactions, timeframe, today]);
+  }, [transactions, activeTimeframe, today]);
 
   /*=========================
        CATEGORY DATA
@@ -188,6 +192,24 @@ function IncomeCategoryChart({ timeframe = "Monthly", transactions = [] }) {
             Expense by Category
           </button>
         </div>
+
+        <select
+          className="chart-timeframe-select"
+          value={timeframe}
+          onChange={(e) => setTimeframe(e.target.value)}
+        >
+          <option value="" disabled hidden>
+            Timeframe
+          </option>
+
+          <option value="Monthly">Monthly</option>
+
+          <option value="Weekly">Weekly</option>
+
+          <option value="Yearly">Yearly</option>
+
+          <option value="All">All Time</option>
+        </select>
       </div>
 
       {chartData.length === 0 ? (

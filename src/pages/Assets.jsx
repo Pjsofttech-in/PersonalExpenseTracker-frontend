@@ -1,453 +1,331 @@
 import { useEffect, useState } from "react";
-import { FaPlus, FaEdit, FaTrash, FaTimes, FaChartLine } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import jsPDF from "jspdf";
+import { FaInbox } from "react-icons/fa";
 
 import {
-  apiGetAssets,
-  apiAddAsset,
-  apiUpdateAsset,
-  apiUpdateAssetValue,
-  apiDeleteAsset,
-  apiAddAssetCategory,
-  apiGetContacts,
-  apiGetBanks,
-} from "../utils/api";
-
-import Liabilities from "./Liabilities";
+  loadTransactionsFromBackend,
+  deleteTransactionFromBackend,
+} from "../utils/backendData";
 
 import "../css/Settings.css";
+import "../css/List.css";
+import "../css/Liabilities.css";
 import "../css/Assets.css";
 
-/* =========================================
-   ASSETS PAGE — real backend (/api/assets)
-   ========================================= */
-
-const ASSET_TYPES = [
-  { value: "CASH", label: "Cash" },
-  { value: "BANK_ACCOUNT", label: "Bank Account" },
-  { value: "GOLD", label: "Gold" },
-  { value: "SILVER", label: "Silver" },
-  { value: "STOCK", label: "Stock / Shares" },
-  { value: "MUTUAL_FUND", label: "Mutual Fund" },
-  { value: "FIXED_DEPOSIT", label: "Fixed Deposit (FD)" },
-  { value: "PROPERTY", label: "Property" },
-  { value: "VEHICLE", label: "Vehicle" },
-  { value: "ELECTRONICS", label: "Electronics" },
-  { value: "BUSINESS", label: "Business" },
-  { value: "OTHER", label: "Other" },
+const ASSET_PILLS = [
+  {
+    id: "INVESTMENT",
+    label: "Investment",
+    categories: [
+      "Gold",
+      "Silver",
+      "Platinum",
+      "Diamond",
+      "Ind Stock",
+      "US Stock",
+      "Mutual Fund",
+      "Bitcoin",
+      "Vehicle",
+      "Plot",
+      "Flat",
+      "Land",
+    ],
+  },
+  {
+    id: "BANKS",
+    label: "Banks",
+    categories: ["Bank FD", "Bank RD", "Bonds", "NPS", "ESPO", "PPF", "SIF"],
+  },
+  {
+    id: "INSURANCE",
+    label: "Insurance",
+    categories: [
+      "Life Insurance",
+      "Health Insurance",
+      "Vehicle Insurance",
+      "Term Insurance",
+    ],
+  },
 ];
 
-const PAYMENT_METHODS = [
-  { value: "CASH", label: "Cash" },
-  { value: "UPI", label: "UPI" },
-  { value: "BANK_TRANSFER", label: "Bank Transfer" },
-  { value: "CHEQUE", label: "Cheque" },
-  { value: "CREDIT_CARD", label: "Credit Card" },
+const LIABILITY_PILLS = [
+  {
+    id: "BILLS",
+    label: "Bills & Recharge",
+    categories: [
+      "Wi-Fi Bill",
+      "Mobile Bill",
+      "Electric Bill",
+      "TV/OTT Bill",
+      "Insurance",
+      "School Fee",
+      "Tuition Fee",
+    ],
+  },
+  {
+    id: "CARD",
+    label: "Credit Card",
+    categories: ["Credit Card"],
+  },
+  {
+    id: "LOANS",
+    label: "Loans",
+    categories: [
+      "Bank Loan",
+      "Gold Loan",
+      "Home Loan",
+      "Vehicle Loan",
+      "Education Loan",
+    ],
+  },
 ];
 
-/* Asset categories — backend मध्ये GET endpoint नाही,
-   म्हणून आपण तयार केलेल्या categories localStorage मध्ये cache करतो */
-
-const ASSET_CATEGORY_KEY = "pet_asset_categories";
-
-const typeLabel = (value) => {
-  const found = ASSET_TYPES.find((item) => item.value === value);
-
-  return found ? found.label : value || "-";
-};
-
-const paymentLabel = (value) => {
-  const found = PAYMENT_METHODS.find((item) => item.value === value);
-
-  return found ? found.label : value || "-";
-};
-
-const formatAmount = (value) =>
-  `₹${Number(value || 0).toLocaleString("en-IN")}`;
-
-// DATE FORMAT (dd-mm-yyyy)
-
-const fmtDate = (d) => {
-  if (!d) return "-";
-
-  const p = String(d).split("-");
-
-  if (p.length !== 3) return d;
-
-  return `${p[2]}-${p[1]}-${p[0]}`;
-};
+const ROWS_PER_PAGE = 25;
 
 function Assets() {
-  const [assets, setAssets] = useState([]);
-
-  const [contacts, setContacts] = useState([]);
-
-  const [banks, setBanks] = useState([]);
-
-  const [assetCategories, setAssetCategories] = useState([]);
-
-  const [search, setSearch] = useState("");
-
-  // formMode: ADD / EDIT / VALUE (valuation update)
-
-  const [showForm, setShowForm] = useState(false);
-
-  const [formMode, setFormMode] = useState("ADD");
-
-  const [editId, setEditId] = useState(null);
-
-  const [formData, setFormData] = useState({});
-
-  const [newValue, setNewValue] = useState("");
-
-  const [error, setError] = useState("");
-
-  /* TAB — Assets | Liabilities (Investment page) */
+  const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState("ASSETS");
+  const [assetPill, setAssetPill] = useState("INVESTMENT");
+  const [liabPill, setLiabPill] = useState("BILLS");
+  const [transactions, setTransactions] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  /* =========================================
-     LOAD DATA (BACKEND)
-     ========================================= */
+  // transactions — List page सारखाच backend data
 
-  const loadCategoriesCache = () => {
+  const loadTransactions = async () => {
     try {
-      return JSON.parse(localStorage.getItem(ASSET_CATEGORY_KEY)) || [];
-    } catch (e) {
-      return [];
-    }
-  };
+      const data = await loadTransactionsFromBackend();
 
-  const loadAll = async () => {
-    try {
-      const [assetList, contactList, bankList] = await Promise.all([
-        apiGetAssets(),
-        apiGetContacts(),
-        apiGetBanks(),
-      ]);
-
-      setAssets(Array.isArray(assetList) ? assetList : []);
-
-      setContacts(Array.isArray(contactList) ? contactList : []);
-
-      setBanks(Array.isArray(bankList) ? bankList : []);
-
-      setAssetCategories(loadCategoriesCache());
+      setTransactions(Array.isArray(data) ? data : []);
     } catch (error) {
-      setAssets([]);
+      setTransactions([]);
     }
   };
 
   useEffect(() => {
-    loadAll();
+    loadTransactions();
 
-    window.addEventListener("assetUpdated", loadAll);
-    window.addEventListener("transactionUpdated", loadAll);
-    window.addEventListener("storage", loadAll);
-    window.addEventListener("focus", loadAll);
+    const handleRefresh = () => loadTransactions();
+
+    window.addEventListener("transactionUpdated", handleRefresh);
+    window.addEventListener("focus", handleRefresh);
 
     return () => {
-      window.removeEventListener("assetUpdated", loadAll);
-      window.removeEventListener("transactionUpdated", loadAll);
-      window.removeEventListener("storage", loadAll);
-      window.removeEventListener("focus", loadAll);
+      window.removeEventListener("transactionUpdated", handleRefresh);
+      window.removeEventListener("focus", handleRefresh);
     };
   }, []);
 
-  /* =========================================
-     CATEGORY HELPERS (cache + create)
-     ========================================= */
+  // helpers
 
-  const saveCategoriesCache = (list) => {
-    localStorage.setItem(ASSET_CATEGORY_KEY, JSON.stringify(list));
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-    setAssetCategories(list);
+  const getTransactionDate = (transaction) => {
+    if (!transaction.date) return null;
+
+    const date = new Date(transaction.date);
+    date.setHours(0, 0, 0, 0);
+
+    return date;
   };
 
-  const getOrCreateCategoryId = async (name) => {
-    const trimmed = name.trim();
+  const getAmount = (item) => Number(item.total || item.amount || 0);
 
-    const cached = loadCategoriesCache().find(
-      (item) => item.name.toLowerCase() === trimmed.toLowerCase(),
-    );
-
-    if (cached) {
-      return cached.id;
+  const getPaid = (item) => {
+    if (item.paymentStatus === "Complete") {
+      return getAmount(item);
     }
 
-    /* नवीन category — backend वर create + cache */
-
-    const created = await apiAddAssetCategory(trimmed);
-
-    saveCategoriesCache([...loadCategoriesCache(), created]);
-
-    return created.id;
+    return Number(item.paid || 0);
   };
 
-  const categoryName = (id) => {
-    const found = assetCategories.find((item) => item.id === id);
+  const getPending = (item) => {
+    if (item.paymentStatus === "Complete") {
+      return 0;
+    }
 
-    return found ? found.name : "-";
+    const total = getAmount(item);
+    const paid = getPaid(item);
+
+    return Math.max(total - paid, 0);
   };
 
-  /* =========================================
-     FORM CHANGE
-     ========================================= */
+  const getFuturePending = (item) => {
+    const transactionDate = getTransactionDate(item);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+    if (!transactionDate) return 0;
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    if (transactionDate > today) {
+      return getPending(item);
+    }
+
+    return Number(item.futurePending || 0);
   };
 
-  /* =========================================
-     OPEN FORMS
-     ========================================= */
+  const fmtDate = (d) => {
+    if (!d) return "-";
 
-  const openAddForm = () => {
-    setFormMode("ADD");
+    const p = String(d).split("-");
 
-    setEditId(null);
+    if (p.length !== 3) return d;
 
-    setError("");
-
-    setFormData({
-      name: "",
-      type: "",
-      category: "",
-      contactId: "",
-      purchaseValue: "",
-      currentValue: "",
-      purchaseDate: new Date().toISOString().split("T")[0],
-      paymentMethod: "",
-      bankId: "",
-      description: "",
-      remark: "",
-    });
-
-    setShowForm(true);
+    return `${p[2]}-${p[1]}-${p[0]}`;
   };
 
-  const openEditForm = (asset) => {
-    setFormMode("EDIT");
+  const formatAmount = (value) =>
+    `₹${Number(value || 0).toLocaleString("en-IN")}`;
 
-    setEditId(asset.id);
+  // active pill च्या categories च्याच transactions
 
-    setError("");
+  const activePill =
+    activeTab === "ASSETS"
+      ? ASSET_PILLS.find((pill) => pill.id === assetPill)
+      : LIABILITY_PILLS.find((pill) => pill.id === liabPill);
 
-    setFormData({
-      name: asset.name || "",
-      type: asset.type || "",
-      category: categoryName(asset.assetCategoryId),
-      contactId: asset.contactId ? String(asset.contactId) : "",
-      purchaseValue: asset.purchaseValue || "",
-      currentValue: asset.currentValue || "",
-      purchaseDate: asset.purchaseDate || "",
-      paymentMethod: asset.paymentMethod || "",
-      bankId: asset.bankId ? String(asset.bankId) : "",
-      description: asset.description || "",
-      remark: "",
-    });
+  const pillTransactions = transactions
+    .filter((item) => activePill.categories.includes(item.category || ""))
+    .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
 
-    setShowForm(true);
+  const pillTotal = pillTransactions.reduce(
+    (sum, item) => sum + getAmount(item),
+    0,
+  );
+
+  const activePillId = activeTab === "ASSETS" ? assetPill : liabPill;
+
+  const handlePillClick = (pillId) => {
+    if (activeTab === "ASSETS") {
+      setAssetPill(pillId);
+    } else {
+      setLiabPill(pillId);
+    }
+
+    setCurrentPage(1);
   };
 
-  const openValueForm = (asset) => {
-    setFormMode("VALUE");
+  // pagination — 25 rows per page
 
-    setEditId(asset.id);
+  const totalRows = pillTransactions.length;
 
-    setError("");
+  const totalPages = Math.ceil(totalRows / ROWS_PER_PAGE) || 1;
 
-    setNewValue(asset.currentValue ? String(asset.currentValue) : "");
+  const safePage = Math.min(currentPage, totalPages);
 
-    setShowForm(true);
+  const startIndex = (safePage - 1) * ROWS_PER_PAGE;
+
+  const pageTransactions = pillTransactions.slice(
+    startIndex,
+    startIndex + ROWS_PER_PAGE,
+  );
+
+  // edit / delete / document — List page सारखंच
+
+  const handleEdit = (item) => {
+    localStorage.setItem("editTransaction", JSON.stringify(item));
+
+    navigate("/income/add");
   };
-
-  const closeForm = () => {
-    setShowForm(false);
-
-    setEditId(null);
-
-    setFormData({});
-
-    setError("");
-  };
-
-  /* =========================================
-     SAVE (ADD / EDIT)
-     ========================================= */
-
-  const handleSave = async () => {
-    if (!formData.name?.trim()) {
-      setError("Please enter asset name.");
-      return;
-    }
-
-    if (!formData.type) {
-      setError("Please select asset type.");
-      return;
-    }
-
-    if (!formData.category?.trim()) {
-      setError("Please enter asset category.");
-      return;
-    }
-
-    if (!formData.contactId) {
-      setError("Please select user (contact).");
-      return;
-    }
-
-    if (!formData.purchaseValue || Number(formData.purchaseValue) <= 0) {
-      setError("Purchase value must be greater than 0.");
-      return;
-    }
-
-    if (!formData.purchaseDate) {
-      setError("Please select purchase date.");
-      return;
-    }
-
-    if (!formData.paymentMethod) {
-      setError("Please select payment method.");
-      return;
-    }
-
-    setError("");
-
-    try {
-      /* Category — cache मध्ये असेल तर तीच, नाहीतर नवीन create */
-
-      const categoryId = await getOrCreateCategoryId(formData.category);
-
-      const payload = {
-        name: formData.name.trim(),
-        type: formData.type,
-        assetCategoryId: categoryId,
-        contactId: Number(formData.contactId),
-        description: formData.description?.trim() || null,
-        purchaseValue: Number(formData.purchaseValue),
-        currentValue: formData.currentValue
-          ? Number(formData.currentValue)
-          : null,
-        purchaseDate: formData.purchaseDate,
-        paymentMethod: formData.paymentMethod,
-        bankId:
-          formData.paymentMethod === "BANK_TRANSFER" && formData.bankId
-            ? Number(formData.bankId)
-            : null,
-        remark: formData.remark?.trim() || null,
-      };
-
-      if (formMode === "EDIT" && editId) {
-        await apiUpdateAsset(editId, payload);
-      } else {
-        await apiAddAsset(payload);
-      }
-
-      await loadAll();
-
-      closeForm();
-
-      /* Dashboard chart + List (auto purchase expense) refresh */
-
-      window.dispatchEvent(new Event("assetUpdated"));
-
-      window.dispatchEvent(new Event("transactionUpdated"));
-    } catch (error) {
-      setError(error.message || "Save failed. Is the backend running?");
-    }
-  };
-
-  /* =========================================
-     VALUATION UPDATE (current value)
-     ========================================= */
-
-  const handleValueSave = async () => {
-    if (newValue === "" || Number(newValue) < 0) {
-      setError("Please enter a valid current value.");
-      return;
-    }
-
-    setError("");
-
-    try {
-      await apiUpdateAssetValue(editId, Number(newValue));
-
-      await loadAll();
-
-      closeForm();
-
-      window.dispatchEvent(new Event("assetUpdated"));
-    } catch (error) {
-      setError(error.message || "Update failed. Is the backend running?");
-    }
-  };
-
-  /* =========================================
-     DELETE
-     ========================================= */
 
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this asset?",
+      "Are you sure you want to delete this transaction?",
     );
 
     if (!confirmDelete) return;
 
     try {
-      await apiDeleteAsset(id);
+      await deleteTransactionFromBackend(id);
 
-      await loadAll();
-
-      window.dispatchEvent(new Event("assetUpdated"));
+      setTransactions(transactions.filter((item) => item.id !== id));
 
       window.dispatchEvent(new Event("transactionUpdated"));
     } catch (error) {
-      alert(error.message || "Delete failed. Is the backend running?");
+      alert(error.message || "Could not delete. Is the backend running?");
     }
   };
 
-  /* =========================================
-     FILTER + SUMMARY
-     ========================================= */
+  const downloadDocument = (item) => {
+    const documentTitle = item.billType === "Invoice" ? "INVOICE" : "RECEIPT";
 
-  const filteredAssets = assets.filter(
-    (item) =>
-      item.name?.toLowerCase().includes(search.toLowerCase()) ||
-      typeLabel(item.type).toLowerCase().includes(search.toLowerCase()),
-  );
+    const doc = new jsPDF();
 
-  const totalPurchase = assets.reduce(
-    (sum, item) => sum + Number(item.purchaseValue || 0),
-    0,
-  );
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(25, 118, 210);
+    doc.text(documentTitle, 105, 20, { align: "center" });
 
-  const totalCurrent = assets.reduce(
-    (sum, item) => sum + Number(item.currentValue || 0),
-    0,
-  );
+    doc.setDrawColor(200);
+    doc.line(20, 26, 190, 26);
 
-  const gainLoss = totalCurrent - totalPurchase;
+    // jsPDF default fonts "₹" support करत नाहीत, म्हणून "Rs."
 
-  /* =========================================
-     RETURN
-     ========================================= */
+    const fields = [
+      ["Date", item.date || "-"],
+      ["Transaction ID", item.transactionId || "-"],
+      ["Type", item.type || "-"],
+      ["User", item.user || "-"],
+      ["Category", item.category || "-"],
+      ["Particular", item.particular || "-"],
+      ["Amount", `Rs. ${Number(item.amount || 0).toLocaleString("en-IN")}`],
+      ["GST", `Rs. ${Number(item.gstAmount || 0).toLocaleString("en-IN")}`],
+      ["TDS", `Rs. ${Number(item.tdsAmount || 0).toLocaleString("en-IN")}`],
+      ["Total", `Rs. ${getAmount(item).toLocaleString("en-IN")}`],
+      ["Paid", `Rs. ${getPaid(item).toLocaleString("en-IN")}`],
+      ["Pending", `Rs. ${getPending(item).toLocaleString("en-IN")}`],
+      [
+        "Future Pending",
+        `Rs. ${getFuturePending(item).toLocaleString("en-IN")}`,
+      ],
+      ["Bill Type", item.billType || "-"],
+      ["Payment Status", item.paymentStatus || "-"],
+      ["Payment Method", item.paymentMethod || "-"],
+      ["Bank Account", item.bankAccount || "-"],
+      ["Notes", item.notes || "-"],
+    ];
+
+    let y = 38;
+
+    fields.forEach(([label, value]) => {
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(90);
+      doc.text(`${label}:`, 20, y);
+
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(40);
+      doc.text(String(value), 75, y);
+
+      y += 8;
+    });
+
+    doc.setDrawColor(200);
+    doc.line(20, y + 2, 190, y + 2);
+
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(25, 118, 210);
+    doc.text(`Current Status: ${item.paymentStatus || "Pending"}`, 20, y + 14);
+
+    doc.save(`${documentTitle.toLowerCase()}-${item.id}.pdf`);
+  };
 
   return (
     <div className="settings-page">
       <div className="settings-content assets-only">
-        {/* TABS — Assets | Liabilities */}
+        {/* TABS */}
 
         <div className="invest-tabs">
           <button
             className={
               activeTab === "ASSETS" ? "invest-tab active" : "invest-tab"
             }
-            onClick={() => setActiveTab("ASSETS")}
+            onClick={() => {
+              setActiveTab("ASSETS");
+              setCurrentPage(1);
+            }}
           >
             Assets
           </button>
@@ -456,324 +334,222 @@ function Assets() {
             className={
               activeTab === "LIABILITIES" ? "invest-tab active" : "invest-tab"
             }
-            onClick={() => setActiveTab("LIABILITIES")}
+            onClick={() => {
+              setActiveTab("LIABILITIES");
+              setCurrentPage(1);
+            }}
           >
             Liabilities
           </button>
         </div>
 
-        {activeTab === "ASSETS" ? (
-          <div className="settings-section">
-            <div className="search-total">
-              <input
-                type="text"
-                placeholder="Search Asset"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+        {/* PILLS + TOTAL */}
 
-              <div className="total-badge">
-                Total Purchase: {formatAmount(totalPurchase)}
-              </div>
-
-              <div className="total-badge">
-                Total Current: {formatAmount(totalCurrent)}
-              </div>
-
-              <div className={gainLoss >= 0 ? "total-badge" : "total-badge"}>
-                {gainLoss >= 0 ? "Gain" : "Loss"}:{" "}
-                {formatAmount(Math.abs(gainLoss))}
-              </div>
-
-              <button className="add-btn" onClick={openAddForm}>
-                <FaPlus />
-                ADD ASSET
+        <div className="fin-pills">
+          {(activeTab === "ASSETS" ? ASSET_PILLS : LIABILITY_PILLS).map(
+            (pill) => (
+              <button
+                key={pill.id}
+                className={
+                  activePillId === pill.id ? "fin-pill active" : "fin-pill"
+                }
+                onClick={() => handlePillClick(pill.id)}
+              >
+                {pill.label}
               </button>
+            ),
+          )}
+
+          <span className="fin-list-total">
+            Total: {formatAmount(pillTotal)}
+          </span>
+        </div>
+
+        {/* TABLE */}
+
+        <div className="list-table-wrapper">
+          <div className="list-table">
+            <div className="list-table-header">
+              <span>Index</span>
+              <span>Date</span>
+              <span>User</span>
+              <span>Category</span>
+              <span>Particular</span>
+              <span>Amount</span>
+              <span>GST Amt</span>
+              <span>TDS Amt</span>
+              <span>Total</span>
+              <span>Paid</span>
+              <span>Pending</span>
+              <span>Future Pending</span>
+              <span>Due Date</span>
+              <span>Bill Type</span>
+              <span>Status</span>
+              <span>Payment Mode</span>
+              <span>Document</span>
+              <span>Actions</span>
             </div>
 
-            <div className="settings-table">
-              <div className="table-head asset-grid">
-                <span>ID</span>
-                <span>Asset Name</span>
-                <span>Type</span>
-                <span>Category</span>
-                <span>Purchase Value</span>
-                <span>Current Value</span>
-                <span>Purchase Date</span>
-                <span>Payment</span>
-                <span>Actions</span>
-              </div>
+            {pillTransactions.length === 0 ? (
+              <div className="fin-empty-state">
+                <FaInbox className="fin-empty-icon" />
 
-              {filteredAssets.length === 0 ? (
-                <div className="empty-row">No assets found</div>
-              ) : (
-                filteredAssets.map((item) => (
-                  <div className="table-data asset-grid" key={item.id}>
-                    <span>{item.id}</span>
+                <p className="fin-empty-title">No Records Found</p>
 
-                    <span
-                      onDoubleClick={() => openEditForm(item)}
-                      title="Double click to edit"
-                      style={{ cursor: "pointer" }}
-                    >
-                      {item.name}
-                    </span>
-
-                    <span>{typeLabel(item.type)}</span>
-
-                    <span>{categoryName(item.assetCategoryId)}</span>
-
-                    <span>{formatAmount(item.purchaseValue)}</span>
-
-                    <span
-                      className={
-                        Number(item.currentValue || 0) >=
-                        Number(item.purchaseValue || 0)
-                          ? "asset-value-up"
-                          : "asset-value-down"
-                      }
-                    >
-                      {formatAmount(item.currentValue)}
-                    </span>
-
-                    <span>{fmtDate(item.purchaseDate)}</span>
-
-                    <span>{paymentLabel(item.paymentMethod)}</span>
-
-                    <span className="actions">
-                      <FaChartLine
-                        className="edit-icon"
-                        title="Update current value"
-                        onClick={() => openValueForm(item)}
-                      />
-
-                      <FaEdit
-                        className="edit-icon"
-                        title="Edit asset"
-                        onClick={() => openEditForm(item)}
-                      />
-
-                      <FaTrash
-                        className="delete-icon"
-                        title="Delete asset"
-                        onClick={() => handleDelete(item.id)}
-                      />
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        ) : (
-          <Liabilities />
-        )}
-      </div>
-
-      {/* POPUP FORM */}
-
-      {showForm && (
-        <div className="settings-overlay">
-          <div className="settings-modal">
-            <div className="modal-header">
-              <h2>
-                {formMode === "ADD"
-                  ? "Add Asset"
-                  : formMode === "EDIT"
-                    ? "Edit Asset"
-                    : "Update Current Value"}
-              </h2>
-
-              <button className="close-btn" onClick={closeForm}>
-                <FaTimes />
-              </button>
-            </div>
-
-            {error && <div className="modal-error">{error}</div>}
-
-            {/* VALUE MODE — फक्त current value */}
-
-            {formMode === "VALUE" ? (
-              <div className="modal-form">
-                <label>New Current Value *</label>
-
-                <input
-                  type="number"
-                  value={newValue}
-                  onChange={(e) => setNewValue(e.target.value)}
-                  placeholder="Enter current value"
-                  min="0"
-                />
+                <p className="fin-empty-text">
+                  Transactions added via Add Income/Expense will appear here
+                </p>
               </div>
             ) : (
-              <div className="modal-form">
-                <label>Asset Name *</label>
+              pageTransactions.map((item, index) => (
+                <div className="list-table-row" key={item.id}>
+                  <span>{startIndex + index + 1}</span>
 
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name || ""}
-                  onChange={handleChange}
-                  placeholder="e.g. Gold Necklace / Office Laptop"
-                />
+                  <span>{item.date || "-"}</span>
 
-                <label>Asset Type *</label>
+                  <span
+                    className="user-link"
+                    onDoubleClick={() => handleEdit(item)}
+                    title="Double click to edit"
+                  >
+                    {item.user || "-"}
+                  </span>
 
-                <select
-                  name="type"
-                  value={formData.type || ""}
-                  onChange={handleChange}
-                >
-                  <option value="">Select Asset Type</option>
+                  <span>{item.category || "-"}</span>
 
-                  {ASSET_TYPES.map((item) => (
-                    <option key={item.value} value={item.value}>
-                      {item.label}
-                    </option>
-                  ))}
-                </select>
+                  <span>{item.particular || "-"}</span>
 
-                <label>
-                  Asset Category *{" "}
-                  <small>(नवीन नाव लिहिले तर auto-create होईल)</small>
-                </label>
+                  <span>
+                    ₹{Number(item.amount || 0).toLocaleString("en-IN")}
+                  </span>
 
-                <input
-                  type="text"
-                  name="category"
-                  value={formData.category || ""}
-                  onChange={handleChange}
-                  placeholder="e.g. Jewellery / Office Equipment"
-                  list="asset-category-list"
-                />
+                  <span>
+                    ₹{Number(item.gstAmount || 0).toLocaleString("en-IN")}
+                  </span>
 
-                <datalist id="asset-category-list">
-                  {assetCategories.map((item) => (
-                    <option key={item.id} value={item.name} />
-                  ))}
-                </datalist>
+                  <span>
+                    ₹{Number(item.tdsAmount || 0).toLocaleString("en-IN")}
+                  </span>
 
-                <label>User (Contact) *</label>
+                  <span>₹{getAmount(item).toLocaleString("en-IN")}</span>
 
-                <select
-                  name="contactId"
-                  value={formData.contactId || ""}
-                  onChange={handleChange}
-                >
-                  <option value="">Select User</option>
+                  <span>₹{getPaid(item).toLocaleString("en-IN")}</span>
 
-                  {contacts.map((contact) => (
-                    <option key={contact.id} value={contact.id}>
-                      {contact.username || contact.name}
-                    </option>
-                  ))}
-                </select>
+                  <span className="pending-value">
+                    ₹{getPending(item).toLocaleString("en-IN")}
+                  </span>
 
-                <label>Purchase Value (₹) *</label>
+                  <span className="future-pending-value">
+                    ₹{getFuturePending(item).toLocaleString("en-IN")}
+                  </span>
 
-                <input
-                  type="number"
-                  name="purchaseValue"
-                  value={formData.purchaseValue || ""}
-                  onChange={handleChange}
-                  placeholder="Enter purchase value"
-                  min="1"
-                />
+                  <span>{fmtDate(item.dueDate)}</span>
 
-                <label>Current Value (₹)</label>
+                  <span>{item.billType || "-"}</span>
 
-                <input
-                  type="number"
-                  name="currentValue"
-                  value={formData.currentValue || ""}
-                  onChange={handleChange}
-                  placeholder="Blank = purchase value"
-                  min="0"
-                />
+                  <span>
+                    {item.paymentStatus === "Installment" ? (
+                      <b className="status-installment">Installment</b>
+                    ) : (
+                      <b
+                        className={
+                          item.paymentStatus === "Complete"
+                            ? "status-complete"
+                            : "status-refund"
+                        }
+                      >
+                        {item.paymentStatus || "Pending"}
+                      </b>
+                    )}
+                  </span>
 
-                <label>Purchase Date *</label>
+                  <span>{item.paymentMethod || "-"}</span>
 
-                <input
-                  type="date"
-                  name="purchaseDate"
-                  value={formData.purchaseDate || ""}
-                  onChange={handleChange}
-                />
+                  <span className="document-actions">
+                    {item.billType === "Invoice" ? (
+                      <button
+                        className="document-btn invoice-btn"
+                        onClick={() => downloadDocument(item)}
+                        title="Download Invoice PDF"
+                      >
+                        ↓ Invoice
+                      </button>
+                    ) : item.billType === "Receipt" ? (
+                      <button
+                        className="document-btn receipt-btn"
+                        onClick={() => downloadDocument(item)}
+                        title="Download Receipt PDF"
+                      >
+                        ↓ Receipt
+                      </button>
+                    ) : (
+                      <span>-</span>
+                    )}
+                  </span>
 
-                <label>Payment Method *</label>
-
-                <select
-                  name="paymentMethod"
-                  value={formData.paymentMethod || ""}
-                  onChange={handleChange}
-                >
-                  <option value="">Select Payment Method</option>
-
-                  {PAYMENT_METHODS.map((item) => (
-                    <option key={item.value} value={item.value}>
-                      {item.label}
-                    </option>
-                  ))}
-                </select>
-
-                {formData.paymentMethod === "BANK_TRANSFER" && (
-                  <>
-                    <label>Bank Account</label>
-
-                    <select
-                      name="bankId"
-                      value={formData.bankId || ""}
-                      onChange={handleChange}
+                  <span className="row-actions">
+                    <button
+                      className="delete-action"
+                      title="Delete Transaction"
+                      onClick={() => handleDelete(item.id)}
                     >
-                      <option value="">Select Bank Account</option>
-
-                      {banks.map((bank) => (
-                        <option key={bank.id} value={bank.id}>
-                          {bank.bankName || bank.accountName || "Bank"}
-
-                          {bank.accountNumber ? ` - ${bank.accountNumber}` : ""}
-                        </option>
-                      ))}
-                    </select>
-                  </>
-                )}
-
-                <label>Description</label>
-
-                <input
-                  type="text"
-                  name="description"
-                  value={formData.description || ""}
-                  onChange={handleChange}
-                  placeholder="Enter description"
-                />
-
-                <label>Remark</label>
-
-                <input
-                  type="text"
-                  name="remark"
-                  value={formData.remark || ""}
-                  onChange={handleChange}
-                  placeholder="Enter remark"
-                />
-              </div>
+                      🗑️
+                    </button>
+                  </span>
+                </div>
+              ))
             )}
-
-            <div className="modal-buttons">
-              <button className="cancel-btn" onClick={closeForm}>
-                CANCEL
-              </button>
-
-              <button
-                className="save-btn"
-                onClick={formMode === "VALUE" ? handleValueSave : handleSave}
-              >
-                {formMode === "EDIT" ? "UPDATE" : "SAVE"}
-              </button>
-            </div>
           </div>
         </div>
-      )}
+
+        {/* PAGINATION */}
+
+        {totalRows > ROWS_PER_PAGE && (
+          <div className="pagination">
+            <button
+              className="page-btn"
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              disabled={safePage === 1}
+            >
+              ◀ Prev
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(
+                (n) =>
+                  n === 1 || n === totalPages || Math.abs(n - safePage) <= 2,
+              )
+              .map((n, idx, arr) => (
+                <span key={n} className="page-btn-wrap">
+                  {idx > 0 && n - arr[idx - 1] > 1 && (
+                    <span className="page-dots">…</span>
+                  )}
+
+                  <button
+                    className={
+                      n === safePage ? "page-btn active-page" : "page-btn"
+                    }
+                    onClick={() => setCurrentPage(n)}
+                  >
+                    {n}
+                  </button>
+                </span>
+              ))}
+
+            <button
+              className="page-btn"
+              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+              disabled={safePage === totalPages}
+            >
+              Next ▶
+            </button>
+
+            <span className="page-info">
+              Page {safePage} / {totalPages} &nbsp;|&nbsp; {totalRows} records
+            </span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

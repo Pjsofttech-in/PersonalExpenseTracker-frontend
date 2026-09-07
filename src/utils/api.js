@@ -59,15 +59,21 @@ const request = async (path, { method = "GET", body, auth = true } = {}) => {
     throw new Error(message);
   }
 
-  /* काही responses (DELETE) चा body रिकामा असतो */
+  /* काही responses (DELETE) plain text किंवा रिकामे असतात */
 
   const text = await response.text();
 
-  return text ? JSON.parse(text) : null;
+  if (!text) return null;
+
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    return text;
+  }
 };
 
 /* =========================================
-   AUTH API
+   AUTH API 
    ========================================= */
 
 /* REGISTER — body:
@@ -79,6 +85,9 @@ export const apiRegister = ({ name, phoneNumber, email, password }) =>
     body: { name, phoneNumber, email, password },
     auth: false,
   });
+
+/* LOGIN — response च्या body मध्ये फक्त
+   token आहे (plain text string, JSON नाही) */
 
 export const apiLogin = async (email, password) => {
   const response = await fetch(BASE_URL + "/pjsofttech_welcome/login", {
@@ -114,7 +123,7 @@ export const apiDeleteCategory = (id) =>
   request("/pjsofttech/category/" + id, { method: "DELETE" });
 
 /* =========================================
-   CONTACTS API
+   CONTACTS API 
    ========================================= */
 
 export const apiGetContacts = () => request("/pjsofttech/user/users");
@@ -126,7 +135,7 @@ export const apiAddContact = ({ name, phoneNumber, email }) =>
   });
 
 /* =========================================
-   BANKS API 
+   BANKS API
    ========================================= */
 
 export const apiGetBanks = () => request("/pjsofttech/bank");
@@ -151,7 +160,7 @@ export const apiDeleteContact = (id) =>
   request("/pjsofttech/user/" + id, { method: "DELETE" });
 
 /* =========================================
-   EXPENSES (TRANSACTIONS) API
+   EXPENSES (TRANSACTIONS) API 
    ========================================= */
 
 export const apiGetExpenses = () => request("/pjsofttech/expense/expenses");
@@ -174,8 +183,7 @@ export const apiAddInstallmentPayment = (installmentId, payment) =>
   });
 
 /* =========================================
-   ASSETS API — /api/assets
-   (नवीन backend — real Asset tracking)
+   ASSETS API — 
    ========================================= */
 
 export const apiGetAssets = () => request("/api/assets");

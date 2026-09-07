@@ -1,18 +1,82 @@
 import { useEffect, useState } from "react";
 import {
-  loadCategoriesFromBackend,
   loadContactsFromBackend,
   loadBanksFromBackend,
+  loadCategoriesFromBackend,
   saveTransactionToBackend,
   ensureDefaultsOnBackend,
 } from "../../utils/backendData";
 
 import "../../css/AddIncome.css";
 
+/* ASSETS — static grouped list */
+
+const STATIC_ASSET_CATEGORIES = [
+  {
+    group: "Bank",
+    items: ["Bank FD", "Bank RD", "Bonds", "NPS", "ESPO", "PPF", "SIF"],
+  },
+  { group: "Jwelary", items: ["Gold", "Silver", "Platinum", "Diamond"] },
+  {
+    group: "Stocks",
+    items: ["Ind Stock", "US Stock", "Mutual Fund", "Bitcoin"],
+  },
+  { group: "Property", items: ["Vehicle", "Plot", "Flat", "Land"] },
+  {
+    group: "Insurance",
+    items: [
+      "Life Insurance",
+      "Health Insurance",
+      "Vehicle Insurance",
+      "Term Insurance",
+    ],
+  },
+];
+
+/* LIABILITIES — static grouped list */
+
+const STATIC_LIABILITY_CATEGORIES = [
+  {
+    group: "Bills",
+    items: [
+      "Wi-Fi Bill",
+      "Mobile Bill",
+      "Electric Bill",
+      "TV/OTT Bill",
+      "Insurance",
+    ],
+  },
+  { group: "Fees", items: ["School Fee", "Tuition Fee"] },
+  {
+    group: "Loan",
+    items: [
+      "Bank Loan",
+      "Gold Loan",
+      "Home Loan",
+      "Vehicle Loan",
+      "Education Loan",
+    ],
+  },
+  { group: "", items: ["Credit Card"] },
+];
+
+/* EDIT MODE साठी — flat यादी (category वरून Type ओळखायला) */
+
+const ALL_ASSET_CATEGORY_NAMES = STATIC_ASSET_CATEGORIES.flatMap(
+  (section) => section.items,
+);
+
+const ALL_LIABILITY_CATEGORY_NAMES = STATIC_LIABILITY_CATEGORIES.flatMap(
+  (section) => section.items,
+);
+
 function AddIncome() {
-  const [categories, setCategories] = useState([]);
   const [users, setUsers] = useState([]);
   const [bankAccounts, setBankAccounts] = useState([]);
+
+  /* Settings मधल्या dynamic categories (None असताना) */
+
+  const [backendCategories, setBackendCategories] = useState([]);
 
   const [userSearch, setUserSearch] = useState("");
   const [categorySearch, setCategorySearch] = useState("");
@@ -22,6 +86,9 @@ function AddIncome() {
 
   const [formData, setFormData] = useState({
     type: "Expense",
+
+    /* ASSETS / LIABILITIES box ("" = None) */
+
     assetType: "",
     user: "",
     date: new Date().toISOString().split("T")[0],
@@ -48,7 +115,7 @@ function AddIncome() {
 
   const [error, setError] = useState("");
 
-  // Edit mode - List मधून double click/Edit ने आल्यावर
+  // Edit mode
   const [editId, setEditId] = useState(null);
 
   /* =====================================================
@@ -60,25 +127,21 @@ function AddIncome() {
 
     const loadSettingsData = async () => {
       try {
-        /* पहिल्यांदा defaults बनवा (रिकाम्या
-           backend वर dropdown select करता येईल) */
-
         await ensureDefaultsOnBackend();
 
-        const [backendCategories, backendContacts, backendBanks] =
-          await Promise.all([
-            loadCategoriesFromBackend(),
-            loadContactsFromBackend(),
-            loadBanksFromBackend(),
-          ]);
+        const [backendContacts, backendBanks, backendCats] = await Promise.all([
+          loadContactsFromBackend(),
+          loadBanksFromBackend(),
+          loadCategoriesFromBackend(),
+        ]);
 
-        setCategories(backendCategories);
         setUsers(backendContacts);
         setBankAccounts(backendBanks);
+        setBackendCategories(backendCats);
       } catch (error) {
-        setCategories([]);
         setUsers([]);
         setBankAccounts([]);
+        setBackendCategories([]);
       }
     };
 
@@ -94,8 +157,7 @@ function AddIncome() {
   }, []);
 
   /* =====================================================
-     EDIT MODE - List मधून double click ने आल्यावर
-     editTransaction असल्यास form आपोआप भरते
+     EDIT MODE 
      ===================================================== */
 
   useEffect(() => {
@@ -103,22 +165,27 @@ function AddIncome() {
 
     if (!editTransaction) return;
 
-    /* NOTES मधला [Asset] / [Liability] tag वेगळा काढून घ्या */
-
-    const rawNotes = editTransaction.notes || "";
-
-    const assetMatch = rawNotes.match(/\s*\[(Asset|Liability)\]\s*$/i);
-
-    const cleanNotes = assetMatch
-      ? rawNotes.replace(/\s*\[(Asset|Liability)\]\s*$/i, "")
-      : rawNotes;
+    const cleanNotes = (editTransaction.notes || "").replace(
+      /\s*\[(Asset|Liability)\]\s*$/i,
+      "",
+    );
 
     setEditId(editTransaction.id || null);
 
+    /* EDIT — category वरून Assets/Liabilities box ओळख */
+
+    const editCategory = editTransaction.category || "";
+
+    const editAssetType = ALL_ASSET_CATEGORY_NAMES.includes(editCategory)
+      ? "Assets"
+      : ALL_LIABILITY_CATEGORY_NAMES.includes(editCategory)
+        ? "Liabilities"
+        : "";
+
     setFormData((prev) => ({
       ...prev,
-      type: editTransaction.type || prev.type,
-      assetType: assetMatch ? assetMatch[1] : "",
+      assetType: editAssetType,
+      type: editAssetType ? "Expense" : editTransaction.type || prev.type,
       user: editTransaction.user || "",
       date: editTransaction.date || prev.date,
       dueDate: editTransaction.dueDate || "",
@@ -145,6 +212,21 @@ function AddIncome() {
     }));
   }, []);
 
+  useEffect(() => {
+    const prefill = JSON.parse(localStorage.getItem("financialsPrefill"));
+
+    if (!prefill) return;
+
+    localStorage.removeItem("financialsPrefill");
+
+    setFormData((prev) => ({
+      ...prev,
+      type: "Expense",
+      assetType: prefill.assetType || "",
+      category: prefill.category || "",
+    }));
+  }, []);
+
   /* =====================================================
      HANDLE CHANGE
      ===================================================== */
@@ -168,6 +250,20 @@ function AddIncome() {
         updatedData.bankAccount = "";
       }
 
+      if (name === "type") {
+        updatedData.category = "";
+      }
+
+      /* Assets/Liabilities box — category reset + Type = Expense */
+
+      if (name === "assetType") {
+        updatedData.category = "";
+
+        if (value === "Assets" || value === "Liabilities") {
+          updatedData.type = "Expense";
+        }
+      }
+
       return updatedData;
     });
   };
@@ -184,9 +280,21 @@ function AddIncome() {
      CATEGORY SEARCH
      ===================================================== */
 
-  const filteredCategories = categories.filter((category) =>
-    (category.name || "").toLowerCase().includes(categorySearch.toLowerCase()),
-  );
+  const categoryGroups =
+    formData.assetType === "Assets"
+      ? STATIC_ASSET_CATEGORIES
+      : formData.assetType === "Liabilities"
+        ? STATIC_LIABILITY_CATEGORIES
+        : [{ group: "", items: backendCategories.map((c) => c.name) }];
+
+  const filteredCategoryGroups = categoryGroups
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((name) =>
+        name.toLowerCase().includes(categorySearch.toLowerCase()),
+      ),
+    }))
+    .filter((section) => section.items.length > 0);
 
   /* =====================================================
      SELECT USER
@@ -304,24 +412,21 @@ function AddIncome() {
 
     setError("");
 
-    /* ASSET/LIBILITY + NOTES — tag notes मध्ये जातो
-       (List च्या Notes column मध्ये दिसतो) */
-
-    const cleanNotes = (formData.notes || "").replace(
+    const finalNotes = (formData.notes || "").replace(
       /\s*\[(Asset|Liability)\]\s*$/i,
       "",
     );
 
-    const finalNotes = formData.assetType
-      ? cleanNotes + " [" + formData.assetType + "]"
-      : cleanNotes;
-
-    /* BACKEND SAVE (add किंवा update) */
+    /* BACKEND SAVE (assetType backend कडे जात नाही) */
 
     try {
       await saveTransactionToBackend(
         {
           ...formData,
+
+          assetType: undefined,
+
+          type: formData.type,
 
           notes: finalNotes,
 
@@ -339,8 +444,6 @@ function AddIncome() {
 
       localStorage.removeItem("editTransaction");
       setEditId(null);
-
-      // Dashboard/List लगेच update व्हावेत म्हणून
 
       window.dispatchEvent(new Event("transactionUpdated"));
 
@@ -363,6 +466,9 @@ function AddIncome() {
   const handleReset = () => {
     setFormData({
       type: "Expense",
+
+      /* ASSETS / LIABILITIES box reset */
+
       assetType: "",
       user: "",
       date: new Date().toISOString().split("T")[0],
@@ -407,7 +513,7 @@ function AddIncome() {
       {/* FORM */}
 
       <form className="income-expense-form" onSubmit={handleSubmit}>
-        {/* TYPE + ASSET/LIABILITY — शेजारी शेजारी */}
+        {/* TYPE — Expense / Income */}
 
         <div className="type-row">
           <div className="floating-field">
@@ -420,8 +526,10 @@ function AddIncome() {
             </select>
           </div>
 
+          {/* Assets/Liabilities box — Type च्या शेजारी */}
+
           <div className="floating-field">
-            <label>Asset / Liability</label>
+            <label>Assets / Liabilities</label>
 
             <select
               name="assetType"
@@ -430,9 +538,9 @@ function AddIncome() {
             >
               <option value="">None</option>
 
-              <option value="Asset">Asset</option>
+              <option value="Assets">Assets</option>
 
-              <option value="Liability">Liability</option>
+              <option value="Liabilities">Liabilities</option>
             </select>
           </div>
         </div>
@@ -569,16 +677,26 @@ function AddIncome() {
                 Select Category
               </div>
 
-              {filteredCategories.length === 0 ? (
+              {filteredCategoryGroups.length === 0 ? (
                 <div className="dropdown-empty">No categories found</div>
               ) : (
-                filteredCategories.map((category) => (
-                  <div
-                    key={category.id}
-                    className="dropdown-item"
-                    onClick={() => handleSelectCategory(category.name)}
-                  >
-                    {category.name}
+                filteredCategoryGroups.map((section) => (
+                  <div key={section.group || "direct"}>
+                    {section.group && (
+                      <div className="dropdown-group-label">
+                        {section.group}
+                      </div>
+                    )}
+
+                    {section.items.map((categoryName) => (
+                      <div
+                        key={categoryName}
+                        className="dropdown-item"
+                        onClick={() => handleSelectCategory(categoryName)}
+                      >
+                        {categoryName}
+                      </div>
+                    ))}
                   </div>
                 ))
               )}

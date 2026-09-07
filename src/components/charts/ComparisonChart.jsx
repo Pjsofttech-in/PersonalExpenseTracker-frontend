@@ -15,13 +15,13 @@ import {
 
 import "../../css/Charts.css";
 
-function ComparisonChart({
-  timeframe = "Monthly",
-  transactions = [],
-  onTimeframeChange,
-}) {
+function ComparisonChart({ transactions = [] }) {
   const [chartType, setChartType] = useState("PIE");
   const [typeFilter, setTypeFilter] = useState("All");
+
+  const [timeframe, setTimeframe] = useState("");
+
+  const activeTimeframe = timeframe || "Monthly";
 
   const getAmount = (item) => Number(item.total || item.amount || 0);
 
@@ -48,11 +48,11 @@ function ComparisonChart({
    =========================*/
 
   const filteredTransactions = useMemo(() => {
-    if (timeframe === "All") {
+    if (activeTimeframe === "All") {
       return transactions;
     }
 
-    if (timeframe === "Yearly") {
+    if (activeTimeframe === "Yearly") {
       return transactions.filter((item) => {
         const date = getTransactionDate(item);
 
@@ -62,7 +62,7 @@ function ComparisonChart({
       });
     }
 
-    if (timeframe === "Monthly") {
+    if (activeTimeframe === "Monthly") {
       return transactions.filter((item) => {
         const date = getTransactionDate(item);
 
@@ -75,7 +75,7 @@ function ComparisonChart({
       });
     }
 
-    if (timeframe === "Weekly") {
+    if (activeTimeframe === "Weekly") {
       const weekStart = new Date(today);
       weekStart.setDate(today.getDate() - today.getDay());
 
@@ -93,7 +93,7 @@ function ComparisonChart({
     }
 
     return transactions;
-  }, [transactions, timeframe, today]);
+  }, [transactions, activeTimeframe, today]);
 
   /* =========================
          MONTHLY DATA
@@ -233,17 +233,17 @@ function ComparisonChart({
   let data = monthData;
   let xKey = "month";
 
-  if (timeframe === "Yearly") {
+  if (activeTimeframe === "Yearly") {
     data = yearData;
     xKey = "year";
   }
 
-  if (timeframe === "Weekly") {
+  if (activeTimeframe === "Weekly") {
     data = weeklyData;
     xKey = "period";
   }
 
-  if (timeframe === "All") {
+  if (activeTimeframe === "All") {
     data = allData;
     xKey = "period";
   }
@@ -253,9 +253,9 @@ function ComparisonChart({
   const showSavings = typeFilter === "All";
 
   const title =
-    timeframe === "Monthly"
+    activeTimeframe === "Monthly"
       ? "Income, Expense & Saving/Loss Comparison"
-      : `Income, Expense & Saving/Loss - ${timeframe}`;
+      : `Income, Expense & Saving/Loss - ${activeTimeframe}`;
 
   return (
     <div className="chart-card">
@@ -310,9 +310,7 @@ function ComparisonChart({
         <select
           className="chart-timeframe-select"
           value={timeframe}
-          onChange={(e) =>
-            onTimeframeChange && onTimeframeChange(e.target.value)
-          }
+          onChange={(e) => setTimeframe(e.target.value)}
         >
           <option value="" disabled hidden>
             Timeframe
