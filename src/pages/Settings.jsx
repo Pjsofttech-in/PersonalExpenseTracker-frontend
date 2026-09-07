@@ -42,10 +42,6 @@ function Settings() {
 
   const [formData, setFormData] = useState({});
 
-  // ==============================
-  // LOAD DATA (BACKEND)
-  // ==============================
-
   const loadAll = async () => {
     try {
       const [backendCategories, backendContacts, backendBanks] =
@@ -69,10 +65,6 @@ function Settings() {
     loadAll();
   }, []);
 
-  // ==============================
-  // FORM CHANGE
-  // ==============================
-
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -82,16 +74,13 @@ function Settings() {
     }));
   };
 
-  // ==============================
-  // OPEN ADD FORM
-  // ==============================
-
   const openAddForm = () => {
     setEditId(null);
 
     if (activeTab === "categories") {
       setFormData({
         name: "",
+        transactionType: "EXPENSE",
       });
     }
 
@@ -117,31 +106,19 @@ function Settings() {
     setShowForm(true);
   };
 
-  // ==============================
-  // OPEN EDIT FORM
-  // ==============================
-
   const openEditForm = (item) => {
     setEditId(item.id);
     setFormData(item);
     setShowForm(true);
   };
 
-  // ==============================
-  // SAVE (BACKEND)
-  // ==============================
-
   const handleSave = async () => {
-    // CATEGORY — validation
-
     if (activeTab === "categories") {
       if (!formData.name?.trim()) {
         alert("Please enter category name");
         return;
       }
     }
-
-    // USER — validation
 
     if (activeTab === "users") {
       if (!formData.username?.trim()) {
@@ -159,8 +136,6 @@ function Settings() {
         return;
       }
     }
-
-    // BANK ACCOUNT — validation
 
     if (activeTab === "bankAccounts") {
       if (!formData.bankName?.trim()) {
@@ -189,21 +164,17 @@ function Settings() {
       }
     }
 
-    /* BACKEND API CALLS */
-
     try {
-      // CATEGORY (backend मध्ये PUT नाही — edit =
-      // delete + पुन्हा add)
-
       if (activeTab === "categories") {
         if (editId) {
           await apiDeleteCategory(editId);
         }
 
-        await apiAddCategory(formData.name.trim());
+        await apiAddCategory(
+          formData.name.trim(),
+          formData.transactionType || "EXPENSE",
+        );
       }
-
-      // USER / CONTACT (PUT आहे)
 
       if (activeTab === "users") {
         const payload = {
@@ -218,9 +189,6 @@ function Settings() {
           await apiAddContact(payload);
         }
       }
-
-      // BANK ACCOUNT (backend मध्ये PUT नाही — edit =
-      // delete + पुन्हा add; accountType → enum)
 
       if (activeTab === "bankAccounts") {
         const payload = {
@@ -239,8 +207,6 @@ function Settings() {
         await apiAddBank(payload);
       }
 
-      // BACKEND वरून पुन्हा load
-
       await loadAll();
 
       setShowForm(false);
@@ -250,10 +216,6 @@ function Settings() {
       alert(error.message || "Save failed. Is the backend running?");
     }
   };
-
-  // ==============================
-  // DELETE (BACKEND)
-  // ==============================
 
   const deleteItem = async (id, type) => {
     const confirmDelete = window.confirm(
@@ -275,8 +237,6 @@ function Settings() {
         await apiDeleteBank(id);
       }
 
-      // BACKEND वरून पुन्हा load
-
       await loadAll();
     } catch (error) {
       alert(
@@ -285,10 +245,6 @@ function Settings() {
       );
     }
   };
-
-  // ==============================
-  // FILTER
-  // ==============================
 
   const filteredCategories = categories.filter((item) =>
     item.name?.toLowerCase().includes(searchCategory.toLowerCase()),
@@ -303,10 +259,6 @@ function Settings() {
       item.bankName?.toLowerCase().includes(searchBank.toLowerCase()) ||
       item.accountName?.toLowerCase().includes(searchBank.toLowerCase()),
   );
-
-  // ==============================
-  // FORM TITLE
-  // ==============================
 
   const getFormTitle = () => {
     if (activeTab === "categories") {
@@ -323,8 +275,6 @@ function Settings() {
   return (
     <div className="settings-page">
       <div className="settings-content">
-        {/* LEFT SETTINGS MENU */}
-
         <div className="settings-menu">
           <button
             className={activeTab === "categories" ? "menu-active" : ""}
@@ -351,11 +301,7 @@ function Settings() {
           </button>
         </div>
 
-        {/* MAIN CONTENT */}
-
         <div className="settings-main">
-          {/* CATEGORY */}
-
           {activeTab === "categories" && (
             <div className="settings-section">
               <div className="search-total">
@@ -417,8 +363,6 @@ function Settings() {
               </div>
             </div>
           )}
-
-          {/* USERS */}
 
           {activeTab === "users" && (
             <div className="settings-section">
@@ -484,8 +428,6 @@ function Settings() {
               </div>
             </div>
           )}
-
-          {/* BANK ACCOUNTS */}
 
           {activeTab === "bankAccounts" && (
             <div className="settings-section">
@@ -566,8 +508,6 @@ function Settings() {
         </div>
       </div>
 
-      {/* POPUP FORM */}
-
       {showForm && (
         <div className="settings-overlay">
           <div className="settings-modal">
@@ -586,8 +526,6 @@ function Settings() {
               </button>
             </div>
 
-            {/* CATEGORY FORM */}
-
             {activeTab === "categories" && (
               <div className="modal-form">
                 <label>Category Name *</label>
@@ -601,8 +539,6 @@ function Settings() {
                 />
               </div>
             )}
-
-            {/* USER FORM */}
 
             {activeTab === "users" && (
               <div className="modal-form">
@@ -637,8 +573,6 @@ function Settings() {
                 />
               </div>
             )}
-
-            {/* BANK FORM */}
 
             {activeTab === "bankAccounts" && (
               <div className="modal-form bank-form">

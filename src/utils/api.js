@@ -2,17 +2,9 @@ const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 
 const TOKEN_KEY = "pet_token";
 
-/* =========================================
-   TOKEN HELPERS
-   ========================================= */
-
 export const getToken = () => localStorage.getItem(TOKEN_KEY);
 
 export const clearToken = () => localStorage.removeItem(TOKEN_KEY);
-
-/* =========================================
-   CORE REQUEST WRAPPER
-   ========================================= */
 
 const request = async (path, { method = "GET", body, auth = true } = {}) => {
   const headers = { "Content-Type": "application/json" };
@@ -20,8 +12,6 @@ const request = async (path, { method = "GET", body, auth = true } = {}) => {
   if (auth && getToken()) {
     headers["Authorization"] = "Bearer " + getToken();
   }
-
-  /* BACKEND चालू नसेल तर fetch लगेच fail होतो */
 
   let response;
 
@@ -37,19 +27,13 @@ const request = async (path, { method = "GET", body, auth = true } = {}) => {
     );
   }
 
-  /* ERROR HANDLING */
-
   if (!response.ok) {
     let message = "Something went wrong (status " + response.status + ")";
 
     try {
       const data = await response.json();
       message = data.message || data.error || message;
-    } catch (error) {
-      /* body JSON नाही — default message वापर */
-    }
-
-    /* TOKEN EXPIRED / INVALID → logout */
+    } catch (error) {}
 
     if (response.status === 401 || response.status === 403) {
       clearToken();
@@ -58,8 +42,6 @@ const request = async (path, { method = "GET", body, auth = true } = {}) => {
 
     throw new Error(message);
   }
-
-  /* काही responses (DELETE) plain text किंवा रिकामे असतात */
 
   const text = await response.text();
 
@@ -72,22 +54,12 @@ const request = async (path, { method = "GET", body, auth = true } = {}) => {
   }
 };
 
-/* =========================================
-   AUTH API 
-   ========================================= */
-
-/* REGISTER — body:
-   { name, phoneNumber (10 digits), email, password } */
-
 export const apiRegister = ({ name, phoneNumber, email, password }) =>
   request("/pjsofttech_welcome/register", {
     method: "POST",
     body: { name, phoneNumber, email, password },
     auth: false,
   });
-
-/* LOGIN — response च्या body मध्ये फक्त
-   token आहे (plain text string, JSON नाही) */
 
 export const apiLogin = async (email, password) => {
   const response = await fetch(BASE_URL + "/pjsofttech_welcome/login", {
@@ -107,24 +79,16 @@ export const apiLogin = async (email, password) => {
   return token;
 };
 
-/* =========================================
-   CATEGORIES API 
-   ========================================= */
-
 export const apiGetCategories = () => request("/pjsofttech/category");
 
-export const apiAddCategory = (name) =>
+export const apiAddCategory = (name, transactionType = "EXPENSE") =>
   request("/pjsofttech/category", {
     method: "POST",
-    body: { name },
+    body: { name, transactionType },
   });
 
 export const apiDeleteCategory = (id) =>
   request("/pjsofttech/category/" + id, { method: "DELETE" });
-
-/* =========================================
-   CONTACTS API 
-   ========================================= */
 
 export const apiGetContacts = () => request("/pjsofttech/user/users");
 
@@ -134,10 +98,6 @@ export const apiAddContact = ({ name, phoneNumber, email }) =>
     body: { name, phoneNumber, email },
   });
 
-/* =========================================
-   BANKS API
-   ========================================= */
-
 export const apiGetBanks = () => request("/pjsofttech/bank");
 
 export const apiAddBank = (bank) =>
@@ -145,10 +105,6 @@ export const apiAddBank = (bank) =>
 
 export const apiDeleteBank = (id) =>
   request("/pjsofttech/bank/" + id, { method: "DELETE" });
-
-/* =========================================
-   CONTACT UPDATE / DELETE
-   ========================================= */
 
 export const apiUpdateContact = (id, { name, phoneNumber, email }) =>
   request("/pjsofttech/user/" + id, {
@@ -158,10 +114,6 @@ export const apiUpdateContact = (id, { name, phoneNumber, email }) =>
 
 export const apiDeleteContact = (id) =>
   request("/pjsofttech/user/" + id, { method: "DELETE" });
-
-/* =========================================
-   EXPENSES (TRANSACTIONS) API 
-   ========================================= */
 
 export const apiGetExpenses = () => request("/pjsofttech/expense/expenses");
 
@@ -174,17 +126,11 @@ export const apiUpdateExpense = (id, expense) =>
 export const apiDeleteExpense = (id) =>
   request("/pjsofttech/expense/" + id, { method: "DELETE" });
 
-/* INSTALLMENT PAYMENT (List popup वाला) */
-
 export const apiAddInstallmentPayment = (installmentId, payment) =>
   request("/pjsofttech/expense/installment/" + installmentId + "/payment", {
     method: "POST",
     body: payment,
   });
-
-/* =========================================
-   ASSETS API — 
-   ========================================= */
 
 export const apiGetAssets = () => request("/api/assets");
 
@@ -202,15 +148,8 @@ export const apiUpdateAssetValue = (id, currentValue) =>
 export const apiDeleteAsset = (id) =>
   request("/api/assets/" + id, { method: "DELETE" });
 
-/* ASSET CATEGORY — POST /api/assets/assets-category */
-
 export const apiAddAssetCategory = (name) =>
   request("/api/assets/assets-category", { method: "POST", body: { name } });
-
-/* =========================================
-   LIABILITIES API — /api/liabilities
-   (नवीन backend — real Liability tracking)
-   ========================================= */
 
 export const apiGetLiabilities = () => request("/api/liabilities");
 

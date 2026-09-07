@@ -1,17 +1,9 @@
-/* =========================================
-   SETTINGS PAGE
-========================================= */
-
 .settings-page {
   min-height: 100vh;
   width: 100%;
   background: #f5f7fb;
   font-family: "Poppins", sans-serif;
 }
-
-/* =========================================
-   SETTINGS CONTENT
-========================================= */
 
 .settings-content {
   display: flex;
@@ -22,10 +14,6 @@
   box-sizing: border-box;
   align-items: flex-start;
 }
-
-/* =========================================
-   LEFT SETTINGS MENU
-========================================= */
 
 .settings-menu {
   width: 230px;
@@ -39,8 +27,6 @@
   overflow: hidden;
   transition: all 0.3s ease;
 }
-
-/* Menu Button */
 
 .settings-menu button {
   width: 100%;
@@ -60,30 +46,20 @@
   white-space: nowrap;
 }
 
-/* Icons */
-
 .settings-menu button svg {
   min-width: 20px;
   font-size: 18px;
 }
 
-/* Hover */
-
 .settings-menu button:hover {
   background: rgba(255, 255, 255, 0.18);
 }
-
-/* Active */
 
 .settings-menu button.menu-active {
   background: white;
   color: #222;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
-
-/* =========================================
-   COLLAPSED SIDEBAR
-========================================= */
 
 .settings-menu:not(:hover) {
   width: 55px;
@@ -100,10 +76,6 @@
   gap: 0;
 }
 
-/* =========================================
-   MAIN CONTENT
-========================================= */
-
 .settings-main {
   flex: 1;
   min-width: 0;
@@ -118,10 +90,6 @@
 .settings-section {
   width: 100%;
 }
-
-/* =========================================
-   SECTION TOP
-========================================= */
 
 .section-top {
   display: flex;
@@ -142,10 +110,6 @@
   color: #777;
   font-size: 13px;
 }
-
-/* =========================================
-   ADD BUTTON
-========================================= */
 
 .add-btn {
   height: 42px;
@@ -168,10 +132,6 @@
   background: #1565c0;
   transform: translateY(-1px);
 }
-
-/* =========================================
-   SEARCH
-========================================= */
 
 .search-total {
   display: flex;
@@ -197,15 +157,9 @@
   box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.08);
 }
 
-/* ADD BUTTON — search + total row मध्ये (उजवीकडे) */
-
 .search-total .add-btn {
   margin-left: auto;
 }
-
-/* =========================================
-   TOTAL BADGE
-========================================= */
 
 .total-badge {
   height: 42px;
@@ -220,10 +174,6 @@
   white-space: nowrap;
 }
 
-/* =========================================
-   TABLE
-========================================= */
-
 .settings-table {
   width: 100%;
   border: 1px solid #ddd;
@@ -231,8 +181,6 @@
   overflow-x: auto;
   overflow-y: hidden;
 }
-
-/* Common Grid */
 
 .table-head,
 .table-data {
@@ -242,13 +190,9 @@
   text-align: center;
 }
 
-/* Category */
-
 .category-grid {
-  grid-template-columns: 80px 1fr 180px;
+  grid-template-columns: 80px 1fr 90px 150px;
 }
-
-/* User */
 
 .user-grid {
   grid-template-columns:
@@ -258,8 +202,6 @@
     250px
     150px;
 }
-
-/* Bank */
 
 .bank-grid {
   grid-template-columns:
@@ -272,8 +214,6 @@
     140px;
 }
 
-/* Table Head */
-
 .table-head {
   min-height: 42px;
   background: #6495ed;
@@ -281,8 +221,6 @@
   font-size: 13px;
   font-weight: 600;
 }
-
-/* Table Data */
 
 .table-data {
   min-height: 50px;
@@ -303,10 +241,6 @@
 .table-data:last-child {
   border-bottom: none;
 }
-
-/* =========================================
-   ACTIONS
-========================================= */
 
 .actions {
   display: flex;
@@ -340,10 +274,6 @@
   color: #b91c1c;
 }
 
-/* =========================================
-   EMPTY
-========================================= */
-
 .empty-row {
   min-height: 80px;
   display: flex;
@@ -352,10 +282,6 @@
   color: #888;
   font-size: 13px;
 }
-
-/* =========================================
-   POPUP OVERLAY
-========================================= */
 
 .settings-overlay {
   position: fixed;
@@ -368,10 +294,6 @@
   padding: 20px;
   box-sizing: border-box;
 }
-
-/* =========================================
-   POPUP
-========================================= */
 
 .settings-modal {
   width: 500px;
@@ -395,10 +317,6 @@
     transform: scale(1) translateY(0);
   }
 }
-
-/* =========================================
-   MODAL HEADER
-========================================= */
 
 .modal-header {
   height: 65px;
@@ -436,10 +354,6 @@
   color: #dc2626;
 }
 
-/* =========================================
-   MODAL FORM
-========================================= */
-
 .modal-form {
   padding: 22px;
   display: flex;
@@ -475,10 +389,6 @@
   box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.08);
 }
 
-/* =========================================
-   BANK FORM
-========================================= */
-
 .bank-form {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -501,10 +411,6 @@
 .bank-form input:nth-of-type(2) {
   grid-column: span 1;
 }
-
-/* =========================================
-   MODAL BUTTONS
-========================================= */
 
 .modal-buttons {
   padding: 0 22px 22px;
@@ -540,10 +446,6 @@
 .save-btn:hover {
   background: #1565c0;
 }
-
-/* =========================================
-   RESPONSIVE
-========================================= */
 
 @media (max-width: 900px) {
   .settings-content {

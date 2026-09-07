@@ -12,10 +12,6 @@ import {
   apiAddInstallmentPayment,
 } from "./api";
 
-/* =========================================
-   PAYMENT METHOD MAP
-   ========================================= */
-
 const METHOD_TO_BACKEND = {
   Cash: "CASH",
   Bank: "BANK_TRANSFER",
@@ -32,10 +28,6 @@ const METHOD_FROM_BACKEND = {
   CHEQUE: "Cheque",
 };
 
-/* =========================================
-   DATE HELPERS
-   ========================================= */
-
 const toDateOnly = (value) => String(value || "").slice(0, 10);
 
 const addDaysISO = (dateStr, days) => {
@@ -45,10 +37,6 @@ const addDaysISO = (dateStr, days) => {
 
   return date.toISOString().slice(0, 10);
 };
-
-/* =========================================
-   INSTALLMENT SCHEDULE BUILDER
-   ========================================= */
 
 const buildSchedule = (total, startDate, count = 2) => {
   const safeTotal = Number(total || 0);
@@ -77,10 +65,6 @@ const buildSchedule = (total, startDate, count = 2) => {
 
   return schedule;
 };
-
-/* =========================================
-   BACKEND → FRONTEND MAPPING
-   ========================================= */
 
 const mapInstallmentToFrontend = (installment) => {
   const payments = installment.payments || [];
@@ -126,8 +110,6 @@ const mapExpenseToFrontend = (dto) => {
 
   const date = toDateOnly(dto.date);
 
-  /* STATUS: backend enum → frontend label */
-
   let paymentStatus = "Pending";
 
   if (dto.paymentStatus === "COMPLETE") {
@@ -170,24 +152,20 @@ const mapExpenseToFrontend = (dto) => {
   };
 };
 
-/* =========================================
-   LOAD 
-   ========================================= */
-
 export const loadTransactionsFromBackend = async () => {
   const expenses = await apiGetExpenses();
 
   return (expenses || []).map(mapExpenseToFrontend);
 };
 
-/* =========================================
-   SETTINGS DATA — AddIncome dropdowns साठी
-   ========================================= */
-
 export const loadCategoriesFromBackend = async () => {
   const categories = await apiGetCategories();
 
-  return (categories || []).map((c) => ({ id: c.id, name: c.name }));
+  return (categories || []).map((c) => ({
+    id: c.id,
+    name: c.name,
+    transactionType: c.transactionType || null,
+  }));
 };
 
 export const loadContactsFromBackend = async () => {
@@ -214,11 +192,10 @@ export const loadBanksFromBackend = async () => {
   }));
 };
 
-/* =========================================
-   FIND OR CREATE (नाव → id)
-   ========================================= */
-
-export const findOrCreateCategory = async (name) => {
+export const findOrCreateCategory = async (
+  name,
+  transactionType = "EXPENSE",
+) => {
   const clean = String(name || "").trim();
 
   if (!clean) throw new Error("Category is required");
@@ -226,12 +203,14 @@ export const findOrCreateCategory = async (name) => {
   const categories = await apiGetCategories();
 
   const found = (categories || []).find(
-    (c) => (c.name || "").toLowerCase() === clean.toLowerCase(),
+    (c) =>
+      (c.name || "").toLowerCase() === clean.toLowerCase() &&
+      (!c.transactionType || c.transactionType === transactionType),
   );
 
   if (found) return found.id;
 
-  const created = await apiAddCategory(clean);
+  const created = await apiAddCategory(clean, transactionType);
 
   return created.id;
 };
@@ -280,14 +259,11 @@ export const findOrCreateBank = async (label) => {
   return created.id;
 };
 
-/* =========================================
-   SAVE — Add Income form → backend
-   ========================================= */
-
 export const saveTransactionToBackend = async (form, editId) => {
-  /* 1. CATEGORY / CONTACT / BANK resolve */
-
-  const categoryId = await findOrCreateCategory(form.category);
+  const categoryId = await findOrCreateCategory(
+    form.category,
+    form.type === "Income" ? "INCOME" : "EXPENSE",
+  );
 
   const contactId = await findOrCreateContact(form.user);
 
@@ -298,8 +274,6 @@ export const saveTransactionToBackend = async (form, editId) => {
   if (method === "BANK_TRANSFER") {
     bankId = await findOrCreateBank(form.bankAccount);
   }
-
-  /* 2. REQUEST BODY build */
 
   const amount = Number(form.amount || 0);
 
@@ -336,8 +310,6 @@ export const saveTransactionToBackend = async (form, editId) => {
     remark: form.notes || "",
   };
 
-  /* 3. INSTALLMENT → schedule पाठवा */
-
   if (isInstallment) {
     const schedule = buildSchedule(total, form.date, 2);
 
@@ -346,8 +318,6 @@ export const saveTransactionToBackend = async (form, editId) => {
     request.installments = schedule;
   }
 
-  /* 4. ADD किंवा UPDATE */
-
   if (editId) {
     return apiUpdateExpense(editId, request);
   }
@@ -355,15 +325,7 @@ export const saveTransactionToBackend = async (form, editId) => {
   return apiAddExpense(request);
 };
 
-/* =========================================
-   DELETE
-   ========================================= */
-
 export const deleteTransactionFromBackend = (id) => apiDeleteExpense(id);
-
-/* =========================================
-   INSTALLMENT PAYMENT — List popup
-   ========================================= */
 
 export const payInstallmentOnBackend = (installmentId, amount, date, remark) =>
   apiAddInstallmentPayment(installmentId, {
@@ -371,10 +333,6 @@ export const payInstallmentOnBackend = (installmentId, amount, date, remark) =>
     date: toDateOnly(date) || new Date().toISOString().slice(0, 10),
     remark: remark || "",
   });
-
-/* =========================================
-   FIRST-RUN DEFAULTS
-   ========================================= */
 
 const DEFAULT_CATEGORIES = [
   "Salary",
@@ -389,13 +347,18 @@ const DEFAULT_CATEGORIES = [
   "Other",
 ];
 
+const INCOME_DEFAULTS = ["Salary", "Business", "Freelance"];
+
 export const ensureDefaultsOnBackend = async () => {
   try {
     const categories = await apiGetCategories();
 
     if (!categories || categories.length === 0) {
       for (const name of DEFAULT_CATEGORIES) {
-        await apiAddCategory(name);
+        await apiAddCategory(
+          name,
+          INCOME_DEFAULTS.includes(name) ? "INCOME" : "EXPENSE",
+        );
       }
     }
 

@@ -9,8 +9,6 @@ import {
 
 import "../../css/AddIncome.css";
 
-/* ASSETS — static grouped list */
-
 const STATIC_ASSET_CATEGORIES = [
   {
     group: "Bank",
@@ -32,8 +30,6 @@ const STATIC_ASSET_CATEGORIES = [
     ],
   },
 ];
-
-/* LIABILITIES — static grouped list */
 
 const STATIC_LIABILITY_CATEGORIES = [
   {
@@ -60,8 +56,6 @@ const STATIC_LIABILITY_CATEGORIES = [
   { group: "", items: ["Credit Card"] },
 ];
 
-/* EDIT MODE साठी — flat यादी (category वरून Type ओळखायला) */
-
 const ALL_ASSET_CATEGORY_NAMES = STATIC_ASSET_CATEGORIES.flatMap(
   (section) => section.items,
 );
@@ -74,8 +68,6 @@ function AddIncome() {
   const [users, setUsers] = useState([]);
   const [bankAccounts, setBankAccounts] = useState([]);
 
-  /* Settings मधल्या dynamic categories (None असताना) */
-
   const [backendCategories, setBackendCategories] = useState([]);
 
   const [userSearch, setUserSearch] = useState("");
@@ -86,8 +78,6 @@ function AddIncome() {
 
   const [formData, setFormData] = useState({
     type: "Expense",
-
-    /* ASSETS / LIABILITIES box ("" = None) */
 
     assetType: "",
     user: "",
@@ -115,16 +105,9 @@ function AddIncome() {
 
   const [error, setError] = useState("");
 
-  // Edit mode
   const [editId, setEditId] = useState(null);
 
-  /* =====================================================
-     LOAD USERS / CATEGORIES / BANK ACCOUNTS
-     ===================================================== */
-
   useEffect(() => {
-    // BACKEND वरून categories / contacts / banks load
-
     const loadSettingsData = async () => {
       try {
         await ensureDefaultsOnBackend();
@@ -156,10 +139,6 @@ function AddIncome() {
     };
   }, []);
 
-  /* =====================================================
-     EDIT MODE 
-     ===================================================== */
-
   useEffect(() => {
     const editTransaction = JSON.parse(localStorage.getItem("editTransaction"));
 
@@ -171,8 +150,6 @@ function AddIncome() {
     );
 
     setEditId(editTransaction.id || null);
-
-    /* EDIT — category वरून Assets/Liabilities box ओळख */
 
     const editCategory = editTransaction.category || "";
 
@@ -227,10 +204,6 @@ function AddIncome() {
     }));
   }, []);
 
-  /* =====================================================
-     HANDLE CHANGE
-     ===================================================== */
-
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
@@ -254,8 +227,6 @@ function AddIncome() {
         updatedData.category = "";
       }
 
-      /* Assets/Liabilities box — category reset + Type = Expense */
-
       if (name === "assetType") {
         updatedData.category = "";
 
@@ -268,24 +239,28 @@ function AddIncome() {
     });
   };
 
-  /* =====================================================
-     USER SEARCH
-     ===================================================== */
-
   const filteredUsers = users.filter((user) =>
     (user.username || "").toLowerCase().includes(userSearch.toLowerCase()),
   );
-
-  /* =====================================================
-     CATEGORY SEARCH
-     ===================================================== */
 
   const categoryGroups =
     formData.assetType === "Assets"
       ? STATIC_ASSET_CATEGORIES
       : formData.assetType === "Liabilities"
         ? STATIC_LIABILITY_CATEGORIES
-        : [{ group: "", items: backendCategories.map((c) => c.name) }];
+        : [
+            {
+              group: "",
+              items: backendCategories
+                .filter(
+                  (c) =>
+                    !c.transactionType ||
+                    c.transactionType ===
+                      (formData.type === "Income" ? "INCOME" : "EXPENSE"),
+                )
+                .map((c) => c.name),
+            },
+          ];
 
   const filteredCategoryGroups = categoryGroups
     .map((section) => ({
@@ -295,10 +270,6 @@ function AddIncome() {
       ),
     }))
     .filter((section) => section.items.length > 0);
-
-  /* =====================================================
-     SELECT USER
-     ===================================================== */
 
   const handleSelectUser = (username) => {
     setFormData((prev) => ({
@@ -310,10 +281,6 @@ function AddIncome() {
     setShowUserSearch(false);
   };
 
-  /* =====================================================
-     SELECT CATEGORY
-     ===================================================== */
-
   const handleSelectCategory = (categoryName) => {
     setFormData((prev) => ({
       ...prev,
@@ -323,10 +290,6 @@ function AddIncome() {
     setCategorySearch("");
     setShowCategorySearch(false);
   };
-
-  /* =====================================================
-     CALCULATION
-     ===================================================== */
 
   const amount = Number(formData.amount) || 0;
 
@@ -340,15 +303,7 @@ function AddIncome() {
 
   const total = amount + gstAmount - tdsAmount;
 
-  /* =====================================================
-     TRANSACTION ID VISIBILITY
-     ===================================================== */
-
   const showTransactionId = formData.paymentStatus === "Complete";
-
-  /* =====================================================
-     SAVE
-     ===================================================== */
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -388,7 +343,6 @@ function AddIncome() {
       return;
     }
 
-    // Bill Type + Payment Method फक्त Complete साठी required
     if (formData.paymentStatus === "Complete") {
       if (!formData.billType) {
         setError("Please select bill type.");
@@ -401,7 +355,6 @@ function AddIncome() {
       }
     }
 
-    // Transaction ID फक्त Complete साठी required
     if (
       formData.paymentStatus === "Complete" &&
       !formData.transactionId.trim()
@@ -416,8 +369,6 @@ function AddIncome() {
       /\s*\[(Asset|Liability)\]\s*$/i,
       "",
     );
-
-    /* BACKEND SAVE (assetType backend कडे जात नाही) */
 
     try {
       await saveTransactionToBackend(
@@ -440,8 +391,6 @@ function AddIncome() {
         editId,
       );
 
-      // edit session संपवा
-
       localStorage.removeItem("editTransaction");
       setEditId(null);
 
@@ -459,15 +408,9 @@ function AddIncome() {
     }
   };
 
-  /* =====================================================
-     RESET
-     ===================================================== */
-
   const handleReset = () => {
     setFormData({
       type: "Expense",
-
-      /* ASSETS / LIABILITIES box reset */
 
       assetType: "",
       user: "",
@@ -501,7 +444,6 @@ function AddIncome() {
 
     setError("");
 
-    // edit session साफ
     localStorage.removeItem("editTransaction");
     setEditId(null);
   };
@@ -510,11 +452,7 @@ function AddIncome() {
     <div className="add-income-page">
       {error && <div className="form-error">{error}</div>}
 
-      {/* FORM */}
-
       <form className="income-expense-form" onSubmit={handleSubmit}>
-        {/* TYPE — Expense / Income */}
-
         <div className="type-row">
           <div className="floating-field">
             <label>Type</label>
@@ -525,8 +463,6 @@ function AddIncome() {
               <option value="Income">Income</option>
             </select>
           </div>
-
-          {/* Assets/Liabilities box — Type च्या शेजारी */}
 
           <div className="floating-field">
             <label>Assets / Liabilities</label>
@@ -544,8 +480,6 @@ function AddIncome() {
             </select>
           </div>
         </div>
-
-        {/* USER */}
 
         <div className="floating-field search-field">
           <label>User</label>
@@ -612,8 +546,6 @@ function AddIncome() {
           )}
         </div>
 
-        {/* DATE */}
-
         <div className="floating-field">
           <label>Date</label>
 
@@ -624,8 +556,6 @@ function AddIncome() {
             onChange={handleChange}
           />
         </div>
-
-        {/* CATEGORY */}
 
         <div className="floating-field search-field">
           <label>Category</label>
@@ -704,8 +634,6 @@ function AddIncome() {
           )}
         </div>
 
-        {/* PARTICULAR */}
-
         <div className="floating-field">
           <label>Particular</label>
 
@@ -717,8 +645,6 @@ function AddIncome() {
             placeholder="Enter particular"
           />
         </div>
-
-        {/* TOTAL + PAYMENT STATUS — Amount/GST/TDS च्या वरती */}
 
         <div className="floating-field">
           <label>Total</label>
@@ -743,8 +669,6 @@ function AddIncome() {
             <option value="Income Refund">Income Refund</option>
           </select>
         </div>
-
-        {/* AMOUNT + GST + TDS — शेजारी शेजारी */}
 
         <div className="amount-tax-row">
           <div className="floating-field">
@@ -831,8 +755,6 @@ function AddIncome() {
           </div>
         </div>
 
-        {/* DUE DATE - फक्त Installment निवडल्यावर */}
-
         {formData.paymentStatus === "Installment" && (
           <div className="floating-field">
             <label>Due Date</label>
@@ -851,8 +773,6 @@ function AddIncome() {
 
         {formData.paymentStatus === "Complete" && (
           <>
-            {/* BILL TYPE */}
-
             <div className="floating-field">
               <label>Bill Type</label>
 
@@ -868,8 +788,6 @@ function AddIncome() {
                 <option value="Receipt">Receipt</option>
               </select>
             </div>
-
-            {/* PAYMENT METHOD */}
 
             <div className="floating-field">
               <label>Payment Method</label>
@@ -927,8 +845,6 @@ function AddIncome() {
               </div>
             )}
 
-            {/* TRANSACTION ID */}
-
             {showTransactionId && (
               <div className="floating-field">
                 <label>Transaction ID</label>
@@ -945,8 +861,6 @@ function AddIncome() {
           </>
         )}
 
-        {/* NOTES — शेवटी, जुन्या जागी */}
-
         <div className="floating-field notes-field">
           <label>Notes</label>
 
@@ -957,8 +871,6 @@ function AddIncome() {
             placeholder="Enter notes"
           />
         </div>
-
-        {/* BUTTONS */}
 
         <div className="income-buttons">
           <button type="button" className="cancel-btn" onClick={handleReset}>
