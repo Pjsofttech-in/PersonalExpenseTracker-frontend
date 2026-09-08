@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   FaEnvelope,
@@ -10,6 +10,7 @@ import {
 
 import { loginUser } from "../utils/auth";
 import { apiLogin } from "../utils/api";
+import { ensureDefaultsOnBackend } from "../utils/backendData";
 
 import "../css/Login.css";
 
@@ -22,6 +23,15 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
   const [error, setError] = useState("");
+  const [sessionExpired, setSessionExpired] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("expired")) {
+      setSessionExpired(true);
+      window.history.replaceState({}, "", "/login");
+    }
+  }, []);
 
   /* =========================================
      SUBMIT
@@ -42,12 +52,14 @@ function Login() {
 
     setError("");
 
-    /* BACKEND LOGIN → JWT token */
-
     try {
       const cleanEmail = email.trim().toLowerCase();
 
       await apiLogin(cleanEmail, password);
+
+      // DEFAULT CATEGORIES
+
+      await ensureDefaultsOnBackend();
 
       loginUser(
         {
@@ -76,6 +88,10 @@ function Login() {
         <p className="subtitle">Login to your account</p>
 
         {/* ERROR */}
+
+        {sessionExpired && (
+          <div className="form-error">Session expired. Please login again.</div>
+        )}
 
         {error && <div className="form-error">{error}</div>}
 

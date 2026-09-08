@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import {
   FaFolder,
-  FaUser,
   FaUniversity,
   FaEdit,
   FaTrash,
@@ -11,15 +10,11 @@ import {
 
 import {
   loadCategoriesFromBackend,
-  loadContactsFromBackend,
   loadBanksFromBackend,
 } from "../utils/backendData";
 import {
   apiAddCategory,
   apiDeleteCategory,
-  apiAddContact,
-  apiUpdateContact,
-  apiDeleteContact,
   apiAddBank,
   apiDeleteBank,
 } from "../utils/api";
@@ -30,11 +25,9 @@ function Settings() {
   const [activeTab, setActiveTab] = useState("categories");
 
   const [categories, setCategories] = useState([]);
-  const [users, setUsers] = useState([]);
   const [bankAccounts, setBankAccounts] = useState([]);
 
   const [searchCategory, setSearchCategory] = useState("");
-  const [searchUser, setSearchUser] = useState("");
   const [searchBank, setSearchBank] = useState("");
 
   const [showForm, setShowForm] = useState(false);
@@ -44,19 +37,15 @@ function Settings() {
 
   const loadAll = async () => {
     try {
-      const [backendCategories, backendContacts, backendBanks] =
-        await Promise.all([
-          loadCategoriesFromBackend(),
-          loadContactsFromBackend(),
-          loadBanksFromBackend(),
-        ]);
+      const [backendCategories, backendBanks] = await Promise.all([
+        loadCategoriesFromBackend(),
+        loadBanksFromBackend(),
+      ]);
 
       setCategories(backendCategories);
-      setUsers(backendContacts);
       setBankAccounts(backendBanks);
     } catch (error) {
       setCategories([]);
-      setUsers([]);
       setBankAccounts([]);
     }
   };
@@ -84,14 +73,6 @@ function Settings() {
       });
     }
 
-    if (activeTab === "users") {
-      setFormData({
-        username: "",
-        phone: "",
-        email: "",
-      });
-    }
-
     if (activeTab === "bankAccounts") {
       setFormData({
         bankName: "",
@@ -116,23 +97,6 @@ function Settings() {
     if (activeTab === "categories") {
       if (!formData.name?.trim()) {
         alert("Please enter category name");
-        return;
-      }
-    }
-
-    if (activeTab === "users") {
-      if (!formData.username?.trim()) {
-        alert("Please enter username");
-        return;
-      }
-
-      if (!formData.phone?.trim()) {
-        alert("Please enter phone number");
-        return;
-      }
-
-      if (!formData.email?.trim()) {
-        alert("Please enter email");
         return;
       }
     }
@@ -176,35 +140,35 @@ function Settings() {
         );
       }
 
-      if (activeTab === "users") {
-        const payload = {
-          name: formData.username.trim(),
-          phoneNumber: formData.phone.trim(),
-          email: formData.email.trim(),
-        };
-
-        if (editId) {
-          await apiUpdateContact(editId, payload);
-        } else {
-          await apiAddContact(payload);
-        }
-      }
-
       if (activeTab === "bankAccounts") {
         const payload = {
           name: formData.bankName.trim(),
           branch: formData.branch?.trim() || "",
           accountNumber: formData.accountNumber.trim(),
           ifsc: formData.ifscCode.trim(),
-          accountType:
-            formData.accountType === "Current" ? "CURRENT" : "SAVINGS",
+          accountType: formData.accountType
+            ? formData.accountType.toUpperCase()
+            : "SAVINGS",
+          openingBalance: 0,
         };
 
         if (editId) {
           await apiDeleteBank(editId);
         }
 
-        await apiAddBank(payload);
+        try {
+          await apiAddBank(payload);
+        } catch (error) {
+          if (
+            payload.accountType === "SALARY" ||
+            payload.accountType === "OTHER"
+          ) {
+            throw new Error(
+              "Backend update required for Salary/Other account type. Please use Savings/Current until the backend AccountType enum is updated.",
+            );
+          }
+          throw error;
+        }
       }
 
       await loadAll();
@@ -229,10 +193,6 @@ function Settings() {
         await apiDeleteCategory(id);
       }
 
-      if (type === "user") {
-        await apiDeleteContact(id);
-      }
-
       if (type === "bank") {
         await apiDeleteBank(id);
       }
@@ -250,10 +210,6 @@ function Settings() {
     item.name?.toLowerCase().includes(searchCategory.toLowerCase()),
   );
 
-  const filteredUsers = users.filter((item) =>
-    item.username?.toLowerCase().includes(searchUser.toLowerCase()),
-  );
-
   const filteredBanks = bankAccounts.filter(
     (item) =>
       item.bankName?.toLowerCase().includes(searchBank.toLowerCase()) ||
@@ -263,10 +219,6 @@ function Settings() {
   const getFormTitle = () => {
     if (activeTab === "categories") {
       return editId ? "Edit Category" : "Add Category";
-    }
-
-    if (activeTab === "users") {
-      return editId ? "Edit User" : "Add User";
     }
 
     return editId ? "Edit Bank Account" : "Add Bank Account";
@@ -282,14 +234,6 @@ function Settings() {
           >
             <FaFolder />
             <span>Category</span>
-          </button>
-
-          <button
-            className={activeTab === "users" ? "menu-active" : ""}
-            onClick={() => setActiveTab("users")}
-          >
-            <FaUser />
-            <span>User</span>
           </button>
 
           <button
@@ -355,71 +299,6 @@ function Settings() {
                           className="delete-icon"
                           title="Delete category"
                           onClick={() => deleteItem(item.id, "category")}
-                        />
-                      </span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-
-          {activeTab === "users" && (
-            <div className="settings-section">
-              <div className="search-total">
-                <input
-                  type="text"
-                  placeholder="Search User"
-                  value={searchUser}
-                  onChange={(e) => setSearchUser(e.target.value)}
-                />
-
-                <div className="total-badge">Total Users: {users.length}</div>
-
-                <button className="add-btn" onClick={openAddForm}>
-                  <FaPlus />
-                  ADD USER
-                </button>
-              </div>
-
-              <div className="settings-table">
-                <div className="table-head user-grid">
-                  <span>ID</span>
-                  <span>Username</span>
-                  <span>Phone Number</span>
-                  <span>Email</span>
-                  <span>Actions</span>
-                </div>
-
-                {filteredUsers.length === 0 ? (
-                  <div className="empty-row">No users found</div>
-                ) : (
-                  filteredUsers.map((item) => (
-                    <div className="table-data user-grid" key={item.id}>
-                      <span>{item.id}</span>
-
-                      <span
-                        onDoubleClick={() => openEditForm(item)}
-                        title="Double click to edit"
-                        style={{ cursor: "pointer" }}
-                      >
-                        {item.username}
-                      </span>
-
-                      <span>{item.phone}</span>
-                      <span>{item.email}</span>
-
-                      <span className="actions">
-                        <FaEdit
-                          className="edit-icon"
-                          title="Edit user"
-                          onClick={() => openEditForm(item)}
-                        />
-
-                        <FaTrash
-                          className="delete-icon"
-                          title="Delete user"
-                          onClick={() => deleteItem(item.id, "user")}
                         />
                       </span>
                     </div>
@@ -536,40 +415,6 @@ function Settings() {
                   value={formData.name || ""}
                   onChange={handleChange}
                   placeholder="Enter category name"
-                />
-              </div>
-            )}
-
-            {activeTab === "users" && (
-              <div className="modal-form">
-                <label>Username *</label>
-
-                <input
-                  type="text"
-                  name="username"
-                  value={formData.username || ""}
-                  onChange={handleChange}
-                  placeholder="Enter username"
-                />
-
-                <label>Phone Number *</label>
-
-                <input
-                  type="text"
-                  name="phone"
-                  value={formData.phone || ""}
-                  onChange={handleChange}
-                  placeholder="Enter phone number"
-                />
-
-                <label>Email *</label>
-
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email || ""}
-                  onChange={handleChange}
-                  placeholder="Enter email address"
                 />
               </div>
             )}

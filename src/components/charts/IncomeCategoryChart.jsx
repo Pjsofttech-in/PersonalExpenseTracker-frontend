@@ -97,12 +97,13 @@ function IncomeCategoryChart({ transactions = [] }) {
   =========================*/
 
   const chartData = useMemo(() => {
-    const type = view === "INCOME" ? "Income" : "Expense";
+    const type =
+      view === "INCOME" ? "Income" : view === "EXPENSE" ? "Expense" : null;
 
     const categoryTotals = {};
 
     filteredTransactions
-      .filter((item) => item.type === type)
+      .filter((item) => !type || item.type === type)
       .forEach((item) => {
         const category = item.category || "Other";
         const amount = getAmount(item);
@@ -120,22 +121,32 @@ function IncomeCategoryChart({ transactions = [] }) {
   =========================*/
 
   const headerTitle =
-    view === "INCOME" ? "Income by Category" : "Expense by Category";
+    view === "INCOME"
+      ? "Income by Category"
+      : view === "EXPENSE"
+        ? "Expense by Category"
+        : "Income & Expense by Category";
 
   const headerDesc =
     view === "INCOME"
       ? "Category-wise income distribution"
-      : "Category-wise expense distribution";
+      : view === "EXPENSE"
+        ? "Category-wise expense distribution"
+        : "Category-wise income & expense distribution";
 
   const emptyMessage =
     view === "INCOME"
       ? "No income data available"
-      : "No expense data available";
+      : view === "EXPENSE"
+        ? "No expense data available"
+        : "No data available";
 
   const emptyHint =
     view === "INCOME"
       ? "Add an income to see the category chart."
-      : "Add an expense to see the category chart.";
+      : view === "EXPENSE"
+        ? "Add an expense to see the category chart."
+        : "Add a transaction to see the category chart.";
 
   const formatAmount = (value) => `₹${Number(value).toLocaleString("en-IN")}`;
 
@@ -178,6 +189,13 @@ function IncomeCategoryChart({ transactions = [] }) {
 
       <div className="chart-controls">
         <div className="chart-toggle-group">
+          <button
+            className={view === "ALL" ? "active" : ""}
+            onClick={() => setView("ALL")}
+          >
+            All
+          </button>
+
           <button
             className={view === "INCOME" ? "active" : ""}
             onClick={() => setView("INCOME")}
@@ -276,7 +294,13 @@ function IncomeCategoryChart({ transactions = [] }) {
 
                 <Bar
                   dataKey="value"
-                  name={view === "INCOME" ? "Income" : "Expense"}
+                  name={
+                    view === "INCOME"
+                      ? "Income"
+                      : view === "EXPENSE"
+                        ? "Expense"
+                        : "Amount"
+                  }
                   radius={[0, 6, 6, 0]}
                   barSize={18}
                 >

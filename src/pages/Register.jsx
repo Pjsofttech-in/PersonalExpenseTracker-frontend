@@ -11,6 +11,7 @@ import {
 
 import { loginUser } from "../utils/auth";
 import { apiRegister, apiLogin } from "../utils/api";
+import { ensureDefaultsOnBackend } from "../utils/backendData";
 
 import "../css/Register.css";
 
@@ -85,8 +86,6 @@ function Register() {
     }
 
     setError("");
-
-    /* BACKEND REGISTER + लगेच LOGIN (JWT token) */
 
     try {
       await apiRegister({

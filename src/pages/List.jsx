@@ -20,8 +20,7 @@ function List() {
   const [users, setUsers] = useState([]);
 
   const [filters, setFilters] = useState({
-    type: "",
-    assetType: "All",
+    type: "All",
     timeframe: "All",
     billType: "All",
     category: "All",
@@ -133,20 +132,14 @@ function List() {
   // =========================
 
   const filteredTransactions = transactions.filter((transaction) => {
-    if (
-      filters.type &&
-      filters.type !== "All" &&
-      transaction.type !== filters.type
-    ) {
-      return false;
-    }
-
-    if (
-      filters.assetType &&
-      filters.assetType !== "All" &&
-      !(transaction.notes || "").includes(`[${filters.assetType}]`)
-    ) {
-      return false;
+    if (filters.type && filters.type !== "All") {
+      if (filters.type === "Asset" || filters.type === "Liability") {
+        if (!(transaction.notes || "").includes(`[${filters.type}]`)) {
+          return false;
+        }
+      } else if (transaction.type !== filters.type) {
+        return false;
+      }
     }
 
     if (
@@ -380,10 +373,6 @@ function List() {
 
   const isProfit = profitLoss >= 0;
 
-  // =========================
-  // DOWNLOAD PDF (संपूर्ण list)
-  // =========================
-
   const downloadPDF = () => {
     if (filteredTransactions.length === 0) {
       alert("No transactions available.");
@@ -538,8 +527,6 @@ function List() {
 
       setTransactions(transactions.filter((item) => item.id !== id));
 
-      // FIX: Dashboard / Recent Transactions
-
       window.dispatchEvent(new Event("transactionUpdated"));
     } catch (error) {
       alert(error.message || "Could not delete. Is the backend running?");
@@ -553,7 +540,6 @@ function List() {
   const handleEdit = (item) => {
     localStorage.setItem("editTransaction", JSON.stringify(item));
 
-    // TopNavigation
     navigate("/income/add");
   };
 
@@ -698,24 +684,9 @@ function List() {
           value={filters.type}
           onChange={(e) => handleFilterChange("type", e.target.value)}
         >
-          <option value="" disabled hidden>
-            Type
-          </option>
           <option value="All">All</option>
           <option value="Income">Income</option>
           <option value="Expense">Expense</option>
-        </select>
-
-        {/* ASSET / LIABILITY — निवडल्यावर तेवढेच entries */}
-
-        <select
-          value={filters.assetType}
-          onChange={(e) => handleFilterChange("assetType", e.target.value)}
-        >
-          <option value="" disabled hidden>
-            Asset / Liability
-          </option>
-          <option value="All">All</option>
           <option value="Asset">Asset</option>
           <option value="Liability">Liability</option>
         </select>
@@ -779,8 +750,6 @@ function List() {
           <option value="Income Refund">Income Refund</option>
         </select>
 
-        {/* USER — परत add, Search लहान करून जागा */}
-
         <select
           value={filters.user}
           onChange={(e) => handleFilterChange("user", e.target.value)}
@@ -830,7 +799,7 @@ function List() {
       ========================= */}
 
       {/* =========================
-          LIST BUTTONS + सगळे COLORED TOTALS (एकच line)
+          LIST BUTTONS + सगळे COLORED TOTALS 
       ========================= */}
 
       <div className="list-buttons">
@@ -871,7 +840,7 @@ function List() {
           {Math.abs(profitLoss).toLocaleString("en-IN")}
         </button>
 
-        {/* EXPENSE — Income च्या आधी */}
+        {/* EXPENSE*/}
 
         <button className="summary expense">
           Expense: ₹{totalExpense.toLocaleString("en-IN")}
@@ -918,7 +887,7 @@ function List() {
 
                 <span>{item.date || "-"}</span>
 
-                {/* USER - double click ने edit */}
+                {/* USER  */}
 
                 <span
                   className="user-link"

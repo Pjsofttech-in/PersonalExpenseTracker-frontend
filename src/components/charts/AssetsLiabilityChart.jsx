@@ -13,7 +13,7 @@ import {
   Line,
 } from "recharts";
 
-import { apiGetAssets, apiGetLiabilities } from "../../utils/api";
+import { loadTransactionsFromBackend } from "../../utils/backendData";
 
 import "../../css/Charts.css";
 
@@ -26,32 +26,19 @@ function AssetsLiabilityChart() {
 
   const activeTimeframe = timeframe || "Monthly";
 
-  const [assets, setAssets] = useState([]);
-
-  const [liabilities, setLiabilities] = useState([]);
+  const [transactions, setTransactions] = useState([]);
 
   const [loadError, setLoadError] = useState(false);
 
-  /* =========================
-       LOAD (BACKEND APIs)
-     ========================= */
-
   const loadData = async () => {
     try {
-      const [assetList, liabilityList] = await Promise.all([
-        apiGetAssets(),
-        apiGetLiabilities(),
-      ]);
+      const list = await loadTransactionsFromBackend();
 
-      setAssets(Array.isArray(assetList) ? assetList : []);
-
-      setLiabilities(Array.isArray(liabilityList) ? liabilityList : []);
+      setTransactions(Array.isArray(list) ? list : []);
 
       setLoadError(false);
     } catch (error) {
-      setAssets([]);
-
-      setLiabilities([]);
+      setTransactions([]);
 
       setLoadError(true);
     }
@@ -73,36 +60,59 @@ function AssetsLiabilityChart() {
     };
   }, []);
 
-  /* =========================
-       VALUE HELPERS
-     ========================= */
+  const ASSET_CATEGORIES = [
+    "Bank FD",
+    "Bank RD",
+    "Bonds",
+    "NPS",
+    "ESPO",
+    "PPF",
+    "SIF",
+    "Gold",
+    "Silver",
+    "Platinum",
+    "Diamond",
+    "Ind Stock",
+    "US Stock",
+    "Mutual Fund",
+    "Bitcoin",
+    "Vehicle",
+    "Plot",
+    "Flat",
+    "Land",
+    "Life Insurance",
+    "Health Insurance",
+    "Vehicle Insurance",
+    "Term Insurance",
+  ];
 
-  // Asset ची आजची किंमत (currentValue नाही तर purchaseValue)
+  const LIABILITY_CATEGORIES = [
+    "Wi-Fi Bill",
+    "Mobile Bill",
+    "Electric Bill",
+    "TV/OTT Bill",
+    "Insurance",
+    "School Fee",
+    "Tuition Fee",
+    "Bank Loan",
+    "Gold Loan",
+    "Home Loan",
+    "Vehicle Loan",
+    "Education Loan",
+    "Credit Card",
+  ];
 
-  const getAssetValue = (asset) =>
-    Number(asset.currentValue || asset.purchaseValue || 0);
+  const isAsset = (item) => ASSET_CATEGORIES.includes(item.category || "");
 
-  // Liability ची बाकी रक्कम (outstandingAmount नाही तर principalAmount)
+  const isLiability = (item) =>
+    LIABILITY_CATEGORIES.includes(item.category || "");
 
-  const getLiabilityValue = (liability) =>
-    Number(liability.outstandingAmount || liability.principalAmount || 0);
+  const getValue = (item) => Number(item.total || item.amount || 0);
 
-  const getAssetDate = (asset) => {
-    if (!asset.purchaseDate) return null;
+  const getItemDate = (item) => {
+    if (!item.date) return null;
 
-    const date = new Date(asset.purchaseDate);
-
-    if (Number.isNaN(date.getTime())) return null;
-
-    date.setHours(0, 0, 0, 0);
-
-    return date;
-  };
-
-  const getLiabilityDate = (liability) => {
-    if (!liability.startDate) return null;
-
-    const date = new Date(liability.startDate);
+    const date = new Date(item.date);
 
     if (Number.isNaN(date.getTime())) return null;
 
@@ -116,10 +126,6 @@ function AssetsLiabilityChart() {
     date.setHours(0, 0, 0, 0);
     return date;
   }, []);
-
-  /* =========================
-         MONTHLY DATA
-     ========================= */
 
   const months = [
     "Jan",
@@ -137,21 +143,21 @@ function AssetsLiabilityChart() {
   ];
 
   const monthData = months.map((month, index) => {
-    const monthAssets = assets
-      .filter((asset) => {
-        const date = getAssetDate(asset);
+    const monthAssets = transactions
+      .filter((item) => {
+        const date = getItemDate(item);
 
-        return date && date.getMonth() === index;
+        return date && date.getMonth() === index && isAsset(item);
       })
-      .reduce((sum, asset) => sum + getAssetValue(asset), 0);
+      .reduce((sum, item) => sum + getValue(item), 0);
 
-    const monthLiabilities = liabilities
-      .filter((liability) => {
-        const date = getLiabilityDate(liability);
+    const monthLiabilities = transactions
+      .filter((item) => {
+        const date = getItemDate(item);
 
-        return date && date.getMonth() === index;
+        return date && date.getMonth() === index && isLiability(item);
       })
-      .reduce((sum, liability) => sum + getLiabilityValue(liability), 0);
+      .reduce((sum, item) => sum + getValue(item), 0);
 
     return {
       month,
@@ -161,14 +167,10 @@ function AssetsLiabilityChart() {
     };
   });
 
-  /* =========================
-         YEARLY DATA
-     ========================= */
-
   const yearMap = {};
 
-  assets.forEach((asset) => {
-    const date = getAssetDate(asset);
+  transactions.forEach((item) => {
+    const date = getItemDate(item);
 
     if (!date) return;
 
@@ -178,21 +180,13 @@ function AssetsLiabilityChart() {
       yearMap[year] = { year, assets: 0, liabilities: 0 };
     }
 
-    yearMap[year].assets += getAssetValue(asset);
-  });
-
-  liabilities.forEach((liability) => {
-    const date = getLiabilityDate(liability);
-
-    if (!date) return;
-
-    const year = String(date.getFullYear());
-
-    if (!yearMap[year]) {
-      yearMap[year] = { year, assets: 0, liabilities: 0 };
+    if (isAsset(item)) {
+      yearMap[year].assets += getValue(item);
     }
 
-    yearMap[year].liabilities += getLiabilityValue(liability);
+    if (isLiability(item)) {
+      yearMap[year].liabilities += getValue(item);
+    }
   });
 
   const yearData = Object.values(yearMap)
@@ -202,10 +196,6 @@ function AssetsLiabilityChart() {
     }))
     .sort((a, b) => a.year.localeCompare(b.year));
 
-  /* =========================
-         WEEKLY DATA
-     ========================= */
-
   const weekStart = new Date(today);
   weekStart.setDate(today.getDate() - today.getDay());
 
@@ -213,21 +203,21 @@ function AssetsLiabilityChart() {
   weekEnd.setDate(weekStart.getDate() + 6);
   weekEnd.setHours(23, 59, 59, 999);
 
-  const weeklyAssets = assets
-    .filter((asset) => {
-      const date = getAssetDate(asset);
+  const weeklyAssets = transactions
+    .filter((item) => {
+      const date = getItemDate(item);
 
-      return date && date >= weekStart && date <= weekEnd;
+      return date && date >= weekStart && date <= weekEnd && isAsset(item);
     })
-    .reduce((sum, asset) => sum + getAssetValue(asset), 0);
+    .reduce((sum, item) => sum + getValue(item), 0);
 
-  const weeklyLiabilities = liabilities
-    .filter((liability) => {
-      const date = getLiabilityDate(liability);
+  const weeklyLiabilities = transactions
+    .filter((item) => {
+      const date = getItemDate(item);
 
-      return date && date >= weekStart && date <= weekEnd;
+      return date && date >= weekStart && date <= weekEnd && isLiability(item);
     })
-    .reduce((sum, liability) => sum + getLiabilityValue(liability), 0);
+    .reduce((sum, item) => sum + getValue(item), 0);
 
   const weeklyData = [
     {
@@ -238,19 +228,13 @@ function AssetsLiabilityChart() {
     },
   ];
 
-  /* =========================
-         ALL TIME DATA
-     ========================= */
+  const allAssets = transactions
+    .filter(isAsset)
+    .reduce((sum, item) => sum + getValue(item), 0);
 
-  const allAssets = assets.reduce(
-    (sum, asset) => sum + getAssetValue(asset),
-    0,
-  );
-
-  const allLiabilities = liabilities.reduce(
-    (sum, liability) => sum + getLiabilityValue(liability),
-    0,
-  );
+  const allLiabilities = transactions
+    .filter(isLiability)
+    .reduce((sum, item) => sum + getValue(item), 0);
 
   const allData = [
     {
@@ -260,10 +244,6 @@ function AssetsLiabilityChart() {
       net: allAssets - allLiabilities,
     },
   ];
-
-  /* =========================
-       SELECT CHART DATA
-     ========================= */
 
   let data = monthData;
   let xKey = "month";
@@ -283,7 +263,7 @@ function AssetsLiabilityChart() {
     xKey = "period";
   }
 
-  const hasData = assets.length > 0 || liabilities.length > 0;
+  const hasData = transactions.some(isAsset) || transactions.some(isLiability);
 
   const showAssets = typeFilter !== "Liability";
   const showLiabilities = typeFilter !== "Asset";
@@ -342,6 +322,8 @@ function AssetsLiabilityChart() {
           </button>
         </div>
 
+        {/* TIMEFRAME — chart मधला स्वतःचा dropdown */}
+
         <select
           className="chart-timeframe-select"
           value={timeframe}
@@ -364,10 +346,14 @@ function AssetsLiabilityChart() {
       {loadError ? (
         <div className="expense-empty">
           <p>Could not load assets / liabilities</p>
+          <span>
+            Backend चालू आहे का? Login refresh करा (token expire झाला असेल).
+          </span>
         </div>
       ) : !hasData ? (
         <div className="expense-empty">
           <p>No asset / liability data available</p>
+          <span>Backend मध्ये अजून assets / liabilities add झालेले नाहीत.</span>
         </div>
       ) : (
         <div className="chart-area">

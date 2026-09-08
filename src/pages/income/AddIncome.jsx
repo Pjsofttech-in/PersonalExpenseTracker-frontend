@@ -365,10 +365,16 @@ function AddIncome() {
 
     setError("");
 
-    const finalNotes = (formData.notes || "").replace(
-      /\s*\[(Asset|Liability)\]\s*$/i,
-      "",
-    );
+    const notesTag =
+      formData.assetType === "Assets"
+        ? " [Asset]"
+        : formData.assetType === "Liabilities"
+          ? " [Liability]"
+          : "";
+
+    const finalNotes =
+      (formData.notes || "").replace(/\s*\[(Asset|Liability)\]\s*$/i, "") +
+      notesTag;
 
     try {
       await saveTransactionToBackend(
@@ -826,14 +832,7 @@ function AddIncome() {
                   <option value="">Select Bank Account</option>
 
                   {bankAccounts.map((account) => (
-                    <option
-                      key={account.id}
-                      value={
-                        account.accountNumber ||
-                        account.accountName ||
-                        account.bankName
-                      }
-                    >
+                    <option key={account.id} value={account.id}>
                       {account.bankName || account.accountName || "Bank"}
 
                       {account.accountNumber

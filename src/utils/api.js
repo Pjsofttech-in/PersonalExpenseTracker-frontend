@@ -6,6 +6,27 @@ export const getToken = () => localStorage.getItem(TOKEN_KEY);
 
 export const clearToken = () => localStorage.removeItem(TOKEN_KEY);
 
+import { logoutUser } from "./auth";
+
+let sessionExpiryHandled = false;
+
+const isTokenExpired = (token) => {
+  try {
+    const part = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    const payload = JSON.parse(atob(part));
+    return !payload.exp || payload.exp * 1000 <= Date.now();
+  } catch (error) {
+    return false;
+  }
+};
+
+const handleSessionExpiry = () => {
+  if (sessionExpiryHandled) return;
+  sessionExpiryHandled = true;
+  logoutUser();
+  window.location.href = "/login?expired=1";
+};
+
 const request = async (path, { method = "GET", body, auth = true } = {}) => {
   const headers = { "Content-Type": "application/json" };
 
@@ -35,9 +56,12 @@ const request = async (path, { method = "GET", body, auth = true } = {}) => {
       message = data.message || data.error || message;
     } catch (error) {}
 
-    if (response.status === 401 || response.status === 403) {
-      clearToken();
-      window.dispatchEvent(new Event("authUpdated"));
+    if (auth && (response.status === 401 || response.status === 403)) {
+      const token = getToken();
+      if (!token || isTokenExpired(token)) {
+        handleSessionExpiry();
+        throw new Error("Session expired. Please login again.");
+      }
     }
 
     throw new Error(message);

@@ -49,50 +49,14 @@ const ASSET_PILLS = [
   },
 ];
 
-const LIABILITY_PILLS = [
-  {
-    id: "BILLS",
-    label: "Bills & Recharge",
-    categories: [
-      "Wi-Fi Bill",
-      "Mobile Bill",
-      "Electric Bill",
-      "TV/OTT Bill",
-      "Insurance",
-      "School Fee",
-      "Tuition Fee",
-    ],
-  },
-  {
-    id: "CARD",
-    label: "Credit Card",
-    categories: ["Credit Card"],
-  },
-  {
-    id: "LOANS",
-    label: "Loans",
-    categories: [
-      "Bank Loan",
-      "Gold Loan",
-      "Home Loan",
-      "Vehicle Loan",
-      "Education Loan",
-    ],
-  },
-];
-
 const ROWS_PER_PAGE = 25;
 
 function Assets() {
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState("ASSETS");
   const [assetPill, setAssetPill] = useState("INVESTMENT");
-  const [liabPill, setLiabPill] = useState("BILLS");
   const [transactions, setTransactions] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-
-  // transactions — List page सारखाच backend data
 
   const loadTransactions = async () => {
     try {
@@ -117,8 +81,6 @@ function Assets() {
       window.removeEventListener("focus", handleRefresh);
     };
   }, []);
-
-  // helpers
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -178,12 +140,7 @@ function Assets() {
   const formatAmount = (value) =>
     `₹${Number(value || 0).toLocaleString("en-IN")}`;
 
-  // active pill च्या categories च्याच transactions
-
-  const activePill =
-    activeTab === "ASSETS"
-      ? ASSET_PILLS.find((pill) => pill.id === assetPill)
-      : LIABILITY_PILLS.find((pill) => pill.id === liabPill);
+  const activePill = ASSET_PILLS.find((pill) => pill.id === assetPill);
 
   const pillTransactions = transactions
     .filter((item) => activePill.categories.includes(item.category || ""))
@@ -194,14 +151,10 @@ function Assets() {
     0,
   );
 
-  const activePillId = activeTab === "ASSETS" ? assetPill : liabPill;
+  const activePillId = assetPill;
 
   const handlePillClick = (pillId) => {
-    if (activeTab === "ASSETS") {
-      setAssetPill(pillId);
-    } else {
-      setLiabPill(pillId);
-    }
+    setAssetPill(pillId);
 
     setCurrentPage(1);
   };
@@ -221,7 +174,7 @@ function Assets() {
     startIndex + ROWS_PER_PAGE,
   );
 
-  // edit / delete / document — List page सारखंच
+  // edit / delete / document
 
   const handleEdit = (item) => {
     localStorage.setItem("editTransaction", JSON.stringify(item));
@@ -259,8 +212,6 @@ function Assets() {
 
     doc.setDrawColor(200);
     doc.line(20, 26, 190, 26);
-
-    // jsPDF default fonts "₹" support करत नाहीत, म्हणून "Rs."
 
     const fields = [
       ["Date", item.date || "-"],
@@ -315,50 +266,20 @@ function Assets() {
   return (
     <div className="settings-page">
       <div className="settings-content assets-only">
-        {/* TABS */}
-
-        <div className="invest-tabs">
-          <button
-            className={
-              activeTab === "ASSETS" ? "invest-tab active" : "invest-tab"
-            }
-            onClick={() => {
-              setActiveTab("ASSETS");
-              setCurrentPage(1);
-            }}
-          >
-            Assets
-          </button>
-
-          <button
-            className={
-              activeTab === "LIABILITIES" ? "invest-tab active" : "invest-tab"
-            }
-            onClick={() => {
-              setActiveTab("LIABILITIES");
-              setCurrentPage(1);
-            }}
-          >
-            Liabilities
-          </button>
-        </div>
-
         {/* PILLS + TOTAL */}
 
         <div className="fin-pills">
-          {(activeTab === "ASSETS" ? ASSET_PILLS : LIABILITY_PILLS).map(
-            (pill) => (
-              <button
-                key={pill.id}
-                className={
-                  activePillId === pill.id ? "fin-pill active" : "fin-pill"
-                }
-                onClick={() => handlePillClick(pill.id)}
-              >
-                {pill.label}
-              </button>
-            ),
-          )}
+          {ASSET_PILLS.map((pill) => (
+            <button
+              key={pill.id}
+              className={
+                activePillId === pill.id ? "fin-pill active" : "fin-pill"
+              }
+              onClick={() => handlePillClick(pill.id)}
+            >
+              {pill.label}
+            </button>
+          ))}
 
           <span className="fin-list-total">
             Total: {formatAmount(pillTotal)}

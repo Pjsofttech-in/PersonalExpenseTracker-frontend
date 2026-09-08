@@ -15,6 +15,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AddIncome from "./pages/income/AddIncome";
 import Settings from "./pages/Settings";
+import Users from "./pages/Users";
+import Liabilities from "./pages/Liabilities";
 import List from "./pages/List";
 import Assets from "./pages/Assets";
 
@@ -125,6 +127,7 @@ function App() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/assets"
           element={
@@ -133,6 +136,16 @@ function App() {
             </PrivateRoute>
           }
         />
+
+        <Route
+          path="/liabilities"
+          element={
+            <PrivateRoute>
+              <Liabilities />
+            </PrivateRoute>
+          }
+        />
+
         <Route
           path="/settings"
           element={
@@ -142,7 +155,14 @@ function App() {
           }
         />
 
-        {/* OLD ROUTE — RecentTransactions चे edit बटण इथे जात होतं (आता fix आहे) */}
+        <Route
+          path="/users"
+          element={
+            <PrivateRoute>
+              <Users />
+            </PrivateRoute>
+          }
+        />
 
         <Route
           path="/add-income"

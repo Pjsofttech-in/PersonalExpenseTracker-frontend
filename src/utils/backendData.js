@@ -186,7 +186,9 @@ export const loadBanksFromBackend = async () => {
     id: b.id,
     bankName: b.name,
     accountNumber: b.accountNumber || "",
-    accountType: b.accountType === "CURRENT" ? "Current" : "Savings",
+    accountType: b.accountType
+      ? b.accountType.charAt(0) + b.accountType.slice(1).toLowerCase()
+      : "Savings",
     ifscCode: b.ifsc || "",
     branch: b.branch || "",
   }));
@@ -242,8 +244,11 @@ export const findOrCreateBank = async (label) => {
 
   const banks = await apiGetBanks();
 
+  const idNum = Number(clean);
+
   const found = (banks || []).find(
-    (b) => (b.name || "").toLowerCase() === clean.toLowerCase(),
+    (b) =>
+      b.id === idNum || (b.name || "").toLowerCase() === clean.toLowerCase(),
   );
 
   if (found) return found.id;
@@ -254,6 +259,7 @@ export const findOrCreateBank = async (label) => {
     accountNumber: "",
     ifsc: "",
     accountType: "SAVINGS",
+    openingBalance: 0,
   });
 
   return created.id;
