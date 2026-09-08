@@ -149,9 +149,9 @@ function Users() {
               {filteredUsers.length === 0 ? (
                 <div className="empty-row">No users found</div>
               ) : (
-                filteredUsers.map((item) => (
+                filteredUsers.map((item, index) => (
                   <div className="table-data user-grid" key={item.id}>
-                    <span>{item.id}</span>
+                    <span>{index + 1}</span>
 
                     <span
                       onDoubleClick={() => openEditForm(item)}

@@ -276,9 +276,9 @@ function Settings() {
                 {filteredCategories.length === 0 ? (
                   <div className="empty-row">No categories found</div>
                 ) : (
-                  filteredCategories.map((item) => (
+                  filteredCategories.map((item, index) => (
                     <div className="table-data category-grid" key={item.id}>
-                      <span>{item.id}</span>
+                      <span>{index + 1}</span>
 
                       <span
                         onDoubleClick={() => openEditForm(item)}
@@ -342,9 +342,9 @@ function Settings() {
                 {filteredBanks.length === 0 ? (
                   <div className="empty-row">No bank accounts found</div>
                 ) : (
-                  filteredBanks.map((item) => (
+                  filteredBanks.map((item, index) => (
                     <div className="table-data bank-grid" key={item.id}>
-                      <span>{item.id}</span>
+                      <span>{index + 1}</span>
 
                       <span
                         onDoubleClick={() => openEditForm(item)}
