@@ -652,30 +652,6 @@ function AddIncome() {
           />
         </div>
 
-        <div className="floating-field">
-          <label>Total</label>
-
-          <input type="number" value={total.toFixed(2)} readOnly />
-        </div>
-
-        <div className="floating-field">
-          <label>Payment Status</label>
-
-          <select
-            name="paymentStatus"
-            value={formData.paymentStatus}
-            onChange={handleChange}
-          >
-            <option value="">Select Payment Status</option>
-
-            <option value="Installment">Installment</option>
-
-            <option value="Complete">Complete</option>
-
-            <option value="Income Refund">Income Refund</option>
-          </select>
-        </div>
-
         <div className="amount-tax-row">
           <div className="floating-field">
             <label>Amount</label>
@@ -759,6 +735,30 @@ function AddIncome() {
               </div>
             )}
           </div>
+
+          <div className="floating-field">
+            <label>Total</label>
+
+            <input type="number" value={total.toFixed(2)} readOnly />
+          </div>
+
+          <div className="floating-field">
+            <label>Payment Status</label>
+
+            <select
+              name="paymentStatus"
+              value={formData.paymentStatus}
+              onChange={handleChange}
+            >
+              <option value="">Select Payment Status</option>
+
+              <option value="Installment">Installment</option>
+
+              <option value="Complete">Complete</option>
+
+              <option value="Income Refund">Income Refund</option>
+            </select>
+          </div>
         </div>
 
         {formData.paymentStatus === "Installment" && (
@@ -773,9 +773,6 @@ function AddIncome() {
             />
           </div>
         )}
-
-        {/* AFTER PAYMENT STATUS - फक्त Complete ला Bill Type,
-            Payment Method, Bank Account, Transaction ID दिसतात */}
 
         {formData.paymentStatus === "Complete" && (
           <>
@@ -816,9 +813,6 @@ function AddIncome() {
                 <option value="Cheque">Cheque</option>
               </select>
             </div>
-
-            {/* BANK ACCOUNT - Bank/UPI/Card/Cheque ला दिसतो,
-                Cash ला नाही */}
 
             {formData.paymentMethod && formData.paymentMethod !== "Cash" && (
               <div className="floating-field">

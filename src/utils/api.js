@@ -71,11 +71,25 @@ const request = async (path, { method = "GET", body, auth = true } = {}) => {
 
   if (!text) return null;
 
+  let parsed;
+
   try {
-    return JSON.parse(text);
+    parsed = JSON.parse(text);
   } catch (error) {
     return text;
   }
+
+  if (
+    parsed &&
+    typeof parsed === "object" &&
+    parsed.success === true &&
+    Object.prototype.hasOwnProperty.call(parsed, "data") &&
+    Object.prototype.hasOwnProperty.call(parsed, "timeStamp")
+  ) {
+    return parsed.data;
+  }
+
+  return parsed;
 };
 
 export const apiRegister = ({ name, phoneNumber, email, password }) =>
