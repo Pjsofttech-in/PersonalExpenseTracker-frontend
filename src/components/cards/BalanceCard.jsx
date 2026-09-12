@@ -8,8 +8,6 @@ function BalanceCard() {
   const [transactions, setTransactions] = useState([]);
 
   useEffect(() => {
-    // BACKEND वरून transactions load
-
     const loadTransactions = async () => {
       try {
         const data = await loadTransactionsFromBackend();
@@ -33,13 +31,9 @@ function BalanceCard() {
     };
   }, []);
 
-  // FORMAT AMOUNT
-
   const formatAmount = (amount) => {
     return `₹${Number(amount || 0).toLocaleString("en-IN")}`;
   };
-
-  // CHECK DATE RANGE
 
   const isWithinDays = (dateValue, days) => {
     if (!dateValue) return false;
@@ -57,8 +51,6 @@ function BalanceCard() {
     return transactionDate >= startDate && transactionDate <= today;
   };
 
-  // CHECK TRANSACTION TYPE
-
   const isIncome = (item) => {
     return item.type === "Income" || item.transactionType === "Income";
   };
@@ -67,21 +59,15 @@ function BalanceCard() {
     return item.type === "Expense" || item.transactionType === "Expense";
   };
 
-  // GET AMOUNT
-
   const getAmount = (item) => {
     return Number(item.total || item.amount || 0);
   };
-
-  // CHECK PENDING
 
   const isPending = (item) => {
     const status = item.paymentStatus || item.status || "";
 
     return status !== "Complete" && status !== "Completed";
   };
-
-  // CALCULATE PERIOD DATA
 
   const calculatePeriod = (period) => {
     let periodTransactions = [];
@@ -139,15 +125,11 @@ function BalanceCard() {
     };
   };
 
-  // PERIOD DATA
-
   const todayData = calculatePeriod("Today");
   const sevenDaysData = calculatePeriod("7 Days");
   const thirtyDaysData = calculatePeriod("30 Days");
   const threeSixtyFiveDaysData = calculatePeriod("365 Days");
   const totalData = calculatePeriod("Total");
-
-  // CARDS
 
   const cards = [
     {
@@ -216,8 +198,6 @@ function BalanceCard() {
     },
   ];
 
-  // RETURN
-
   return (
     <div className="balance-section">
       <div className="card-grid">
@@ -241,8 +221,6 @@ function BalanceCard() {
                 {card.icon}
               </div>
             </div>
-
-            {/* CARD VALUES */}
 
             <div className="card-values">
               <div className="card-row">

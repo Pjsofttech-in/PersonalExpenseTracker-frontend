@@ -151,6 +151,30 @@ function Assets() {
     0,
   );
 
+  const pillStats = ASSET_PILLS.map((pill) => {
+    const txns = transactions.filter((item) =>
+      pill.categories.includes(item.category || ""),
+    );
+
+    return {
+      id: pill.id,
+      label: pill.label,
+      paid: txns.reduce((sum, item) => sum + getPaid(item), 0),
+      unpaid: txns.reduce((sum, item) => sum + getPending(item), 0),
+      amount: txns.reduce((sum, item) => sum + getAmount(item), 0),
+    };
+  });
+
+  const categoryStats = activePill.categories.map((category) => {
+    const amount = pillTransactions
+      .filter((item) => (item.category || "") === category)
+      .reduce((sum, item) => sum + getAmount(item), 0);
+
+    const percent =
+      pillTotal > 0 ? ((amount / pillTotal) * 100).toFixed(1) : "0.0";
+
+    return { name: category, amount, percent };
+  });
   const activePillId = assetPill;
 
   const handlePillClick = (pillId) => {
@@ -158,8 +182,6 @@ function Assets() {
 
     setCurrentPage(1);
   };
-
-  // pagination — 25 rows per page
 
   const totalRows = pillTransactions.length;
 
@@ -173,8 +195,6 @@ function Assets() {
     startIndex,
     startIndex + ROWS_PER_PAGE,
   );
-
-  // edit / delete / document
 
   const handleEdit = (item) => {
     localStorage.setItem("editTransaction", JSON.stringify(item));
@@ -266,10 +286,8 @@ function Assets() {
   return (
     <div className="settings-page">
       <div className="settings-content assets-only">
-        {/* PILLS + TOTAL */}
-
-        <div className="fin-pills">
-          {ASSET_PILLS.map((pill) => (
+        <div className="fin-pills fin-pills-lg">
+          {pillStats.map((pill) => (
             <button
               key={pill.id}
               className={
@@ -277,7 +295,17 @@ function Assets() {
               }
               onClick={() => handlePillClick(pill.id)}
             >
-              {pill.label}
+              <span className="fin-pill-label">{pill.label}</span>
+
+              <span className="fin-pill-amounts">
+                <span className="pill-paid">
+                  Paid: {formatAmount(pill.paid)}
+                </span>
+
+                <span className="pill-unpaid">
+                  Unpaid: {formatAmount(pill.unpaid)}
+                </span>
+              </span>
             </button>
           ))}
 
@@ -285,8 +313,23 @@ function Assets() {
             Total: {formatAmount(pillTotal)}
           </span>
         </div>
+        <div className="pill-category-cards">
+          {categoryStats.map((category) => (
+            <div className="pill-category-card" key={category.name}>
+              <span className="pill-category-name">{category.name}</span>
 
-        {/* TABLE */}
+              <span className="pill-category-stats">
+                <span className="pill-category-percent">
+                  {category.percent}%
+                </span>
+
+                <span className="pill-category-amount">
+                  {formatAmount(category.amount)}
+                </span>
+              </span>
+            </div>
+          ))}
+        </div>
 
         <div className="list-table-wrapper">
           <div className="list-table">
@@ -422,8 +465,6 @@ function Assets() {
             )}
           </div>
         </div>
-
-        {/* PAGINATION */}
 
         {totalRows > ROWS_PER_PAGE && (
           <div className="pagination">

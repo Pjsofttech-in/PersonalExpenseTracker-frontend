@@ -11,11 +11,81 @@ import {
   Legend,
   LineChart,
   Line,
+  PieChart,
+  Pie,
 } from "recharts";
 
 import { loadTransactionsFromBackend } from "../../utils/backendData";
 
 import "../../css/Charts.css";
+
+const PIE_COLORS = {
+  Investment: "#16A34A",
+  Banks: "#0EA5E9",
+  Insurance: "#14B8A6",
+  "Bills & Recharge": "#DC2626",
+  "Credit Card": "#F59E0B",
+  Loans: "#8B5CF6",
+};
+
+const ASSET_GROUPS = [
+  {
+    name: "Investment",
+    categories: [
+      "Gold",
+      "Silver",
+      "Platinum",
+      "Diamond",
+      "Ind Stock",
+      "US Stock",
+      "Mutual Fund",
+      "Bitcoin",
+      "Vehicle",
+      "Plot",
+      "Flat",
+      "Land",
+    ],
+  },
+  {
+    name: "Banks",
+    categories: ["Bank FD", "Bank RD", "Bonds", "NPS", "ESPO", "PPF", "SIF"],
+  },
+  {
+    name: "Insurance",
+    categories: [
+      "Life Insurance",
+      "Health Insurance",
+      "Vehicle Insurance",
+      "Term Insurance",
+    ],
+  },
+];
+
+const LIABILITY_GROUPS = [
+  {
+    name: "Bills & Recharge",
+    categories: [
+      "Wi-Fi Bill",
+      "Mobile Bill",
+      "Electric Bill",
+      "TV/OTT Bill",
+      "Insurance",
+      "School Fee",
+      "Tuition Fee",
+    ],
+  },
+  { name: "Credit Card", categories: ["Credit Card"] },
+  {
+    name: "Loans",
+    categories: [
+      "Bank Loan",
+      "Gold Loan",
+      "Home Loan",
+      "Vehicle Loan",
+      "Education Loan",
+    ],
+  },
+];
 
 function AssetsLiabilityChart() {
   const [chartType, setChartType] = useState("BAR");
@@ -274,6 +344,19 @@ function AssetsLiabilityChart() {
       ? "Assets & Liabilities Comparison"
       : `Assets & Liabilities - ${activeTimeframe}`;
 
+  const buildAllocation = (groups) =>
+    groups.map((group) => ({
+      name: group.name,
+      value: transactions
+        .filter((item) => group.categories.includes(item.category || ""))
+        .reduce((sum, item) => sum + getValue(item), 0),
+    }));
+
+  const pieData = [
+    ...(showAssets ? buildAllocation(ASSET_GROUPS) : []),
+    ...(showLiabilities ? buildAllocation(LIABILITY_GROUPS) : []),
+  ].filter((item) => item.value > 0);
+
   return (
     <div className="chart-card">
       <div className="chart-card-header">
@@ -294,6 +377,13 @@ function AssetsLiabilityChart() {
             onClick={() => setChartType("LINE")}
           >
             LINE
+          </button>
+
+          <button
+            className={chartType === "PIE" ? "active" : ""}
+            onClick={() => setChartType("PIE")}
+          >
+            PIE
           </button>
         </div>
       </div>
@@ -322,25 +412,25 @@ function AssetsLiabilityChart() {
           </button>
         </div>
 
-        {/* TIMEFRAME — chart मधला स्वतःचा dropdown */}
+        {chartType !== "PIE" && (
+          <select
+            className="chart-timeframe-select"
+            value={timeframe}
+            onChange={(e) => setTimeframe(e.target.value)}
+          >
+            <option value="" disabled hidden>
+              Timeframe
+            </option>
 
-        <select
-          className="chart-timeframe-select"
-          value={timeframe}
-          onChange={(e) => setTimeframe(e.target.value)}
-        >
-          <option value="" disabled hidden>
-            Timeframe
-          </option>
+            <option value="Monthly">Monthly</option>
 
-          <option value="Monthly">Monthly</option>
+            <option value="Weekly">Weekly</option>
 
-          <option value="Weekly">Weekly</option>
+            <option value="Yearly">Yearly</option>
 
-          <option value="Yearly">Yearly</option>
-
-          <option value="All">All Time</option>
-        </select>
+            <option value="All">All Time</option>
+          </select>
+        )}
       </div>
 
       {loadError ? (
@@ -354,6 +444,41 @@ function AssetsLiabilityChart() {
         <div className="expense-empty">
           <p>No asset / liability data available</p>
           <span>Backend मध्ये अजून assets / liabilities add झालेले नाहीत.</span>
+        </div>
+      ) : chartType === "PIE" ? (
+        <div className="chart-area">
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={pieData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={100}
+                innerRadius={55}
+                paddingAngle={3}
+                label={({ percent }) =>
+                  `${(Number(percent || 0) * 100).toFixed(1)}%`
+                }
+              >
+                {pieData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={PIE_COLORS[entry.name] || "#1976d2"}
+                  />
+                ))}
+              </Pie>
+
+              <Tooltip
+                formatter={(value) =>
+                  `₹${Number(value).toLocaleString("en-IN")}`
+                }
+              />
+
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
       ) : (
         <div className="chart-area">

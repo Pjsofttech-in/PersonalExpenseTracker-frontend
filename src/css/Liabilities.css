@@ -1,4 +1,6 @@
-/* LIABILITY TABLE GRID */
+/* =========================================================
+   LIABILITY TABLE GRID
+   ========================================================= */
 
 .liability-grid {
   grid-template-columns:
@@ -7,152 +9,603 @@
     1fr
     1fr
     1.1fr
-    1.2fr
+    1.1fr
     100px
-    95px
-    150px;
+    1fr
+    110px;
 }
 
-/* OUTSTANDING — लाल (देय रक्कम) */
+/* =========================================================
+   LIABILITY VALUE
+   ========================================================= */
 
-.liab-outstanding {
+.liability-value-up {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.liability-value-down {
   color: #dc2626;
   font-weight: 600;
 }
 
-/* STATUS BADGE */
+/* =========================================================
+   LIABILITIES PAGE
+   ========================================================= */
 
-.liab-status {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 600;
-  white-space: nowrap;
+.assets-only {
+  display: block;
 }
 
-.liab-status-active {
-  background: #e7f6ec;
+/* =========================================================
+   MODAL ERROR
+   ========================================================= */
+
+.modal-error {
+  background: #fdecea;
+  color: #c62828;
+  border: 1px solid #f5c6cb;
+  border-radius: 6px;
+  padding: 9px 12px;
+  font-size: 12px;
+  margin-bottom: 10px;
+  font-family: "Poppins", sans-serif;
+}
+
+/* =========================================================
+   CATEGORY LABEL — SMALL TIP
+   ========================================================= */
+
+.modal-form label small {
+  color: #94a3b8;
+  font-weight: 400;
+  font-size: 10px;
+}
+
+/* =========================================================
+   FINANCIALS HOME
+   ========================================================= */
+
+.fin-pills {
+  display: flex;
+  gap: 10px;
+  flex-wrap: nowrap;
+  margin-bottom: 16px;
+}
+
+.fin-pill {
+  display: flex;
+  flex: 0 1 auto;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+
+  padding: 8px 10px;
+
+  border: 1px solid #c8c8c8;
+  border-radius: 8px;
+
+  background: #fff;
+  color: #444;
+
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.fin-pill:hover {
+  border-color: #1976d2;
+  color: #1976d2;
+}
+
+.fin-pill.active {
+  background: #1976d2;
+  border-color: #1976d2;
+  color: #fff;
+
+  box-shadow: 0 2px 8px rgba(19, 118, 210, 0.3);
+}
+
+/* =========================================================
+   CATEGORY LIST
+   ========================================================= */
+
+.fin-category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fin-category-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  padding: 10px 14px;
+
+  background: #fff;
+  border: 1px solid #e0e6ee;
+  border-radius: 8px;
+}
+
+.fin-category-name {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.fin-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 6px 12px;
+
+  background: #eaf2fd;
+  color: #1976d2;
+
+  border: 1px solid #bcd4f5;
+  border-radius: 6px;
+
+  font-family: "Poppins", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.fin-add-btn:hover {
+  background: #1976d2;
+  color: #fff;
+  border-color: #1976d2;
+}
+
+/* =========================================================
+   REAL DATA ROWS
+   ========================================================= */
+
+.fin-real-head {
+  margin: 18px 0 8px;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  color: #555;
+
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.fin-real-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  padding: 10px 14px;
+
+  background: #fff;
+  border: 1px solid #e0e6ee;
+  border-radius: 8px;
+
+  margin-bottom: 8px;
+}
+
+.fin-real-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+
+  flex: 1;
+}
+
+.fin-real-type {
+  font-size: 12px;
+  color: #666;
+
+  background: #f2f5f9;
+
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.fin-real-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1976d2;
+}
+
+.fin-empty {
+  padding: 14px;
+
+  text-align: center;
+
+  color: #888;
+  font-size: 13px;
+
+  background: #fafbfd;
+
+  border: 1px dashed #d5dde7;
+  border-radius: 8px;
+}
+
+/* =========================================================
+   TRANSACTION LIST
+   ========================================================= */
+
+.fin-list-total {
+  display: flex;
+  align-items: center;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  color: #1976d2;
+
+  background: #eaf2fd;
+
+  border: 1px solid #bcd4f5;
+  border-radius: 6px;
+
+  padding: 5px 12px;
+}
+
+.fin-txn-grid {
+  display: grid;
+
+  grid-template-columns:
+    110px
+    1fr
+    1.4fr
+    120px;
+
+  gap: 8px;
+
+  align-items: center;
+}
+
+.fin-amount-expense {
+  color: #d32f2f;
+  font-weight: 600;
+}
+
+.fin-amount-income {
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.fin-empty-state {
+  min-width: 1940px;
+
+  padding: 42px 0 38px;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 4px;
+
+  background: #ffffff;
+}
+
+.fin-empty-icon {
+  font-size: 38px;
+  color: #aebccd;
+
+  margin-bottom: 8px;
+}
+
+.fin-empty-title {
+  font-size: 15px;
+  font-weight: 600;
+
+  color: #475569;
+
+  margin: 0;
+}
+
+.fin-empty-text {
+  font-size: 12px;
+  color: #8a97a8;
+
+  margin: 0;
+}
+
+/* =========================================================
+   PILL LABEL
+   ========================================================= */
+
+.fin-pill-label {
+  font-size: 13px;
+}
+
+.fin-pill-amounts {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  justify-content: center;
+
+  gap: 4px 8px;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.pill-paid {
   color: #16a34a;
 }
 
-.liab-status-paid_off {
-  background: #e8eefc;
-  color: #1976d2;
-}
-
-.liab-status-cancelled {
-  background: #fdecea;
+.pill-unpaid {
   color: #dc2626;
 }
 
-/* PAYMENT FORM HINTS */
+/* =========================================================
+   CATEGORY CARDS
+   ========================================================= */
 
-.pay-hint {
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  padding: 9px 12px;
-  font-size: 12px;
-  color: #334155;
-  margin-bottom: 10px;
-  font-family: "Poppins", sans-serif;
-}
-
-.pay-total {
-  background: #e8f5e9;
-  border: 1px solid #c8e6c9;
-  border-radius: 6px;
-  padding: 9px 12px;
-  font-size: 13px;
-  color: #1b5e20;
-  margin-bottom: 10px;
-  font-family: "Poppins", sans-serif;
-}
-
-/* PAYMENT HISTORY MODAL */
-
-.history-box {
-  max-height: 400px;
-  overflow-y: auto;
+.pill-category-cards {
   display: flex;
+
+  flex-wrap: nowrap;
+
+  gap: 8px;
+
+  margin: 10px 0 10px;
+
+  overflow-x: auto;
+}
+
+.pill-category-card {
+  display: flex;
+
   flex-direction: column;
-  gap: 10px;
-  padding-right: 4px;
-}
 
-.history-item {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-family: "Poppins", sans-serif;
-}
-
-.history-row {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 10px;
+
+  gap: 3px;
+
+  flex: 0 0 auto;
+
+  background: #fff;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 8px;
+
+  padding: 8px 10px;
 }
 
-.history-date {
+.pill-category-name {
   font-size: 12px;
+
   font-weight: 600;
-  color: #334155;
+
+  color: #374151;
 }
 
-.history-total {
-  font-size: 13px;
-  font-weight: 700;
-  color: #1976d2;
-}
-
-.history-sub {
-  margin-top: 5px;
-}
-
-.history-sub span {
-  font-size: 11px;
-  color: #64748b;
-}
-
-.history-remark {
-  margin-top: 5px;
-  font-size: 11px;
-  color: #94a3b8;
-  justify-content: flex-start;
-}
-
-/* INVESTMENT PAGE TABS (Assets | Liabilities) */
-
-.invest-tabs {
+.pill-category-stats {
   display: flex;
-  gap: 10px;
-  margin-bottom: 18px;
-}
 
-.invest-tab {
-  height: 40px;
-  padding: 0 28px;
-  border-radius: 20px;
-  border: 1.5px solid #1976d2;
-  background: #ffffff;
-  color: #1976d2;
-  font-family: "Poppins", sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  align-items: baseline;
+
+  gap: 6px;
+
   white-space: nowrap;
 }
 
-.invest-tab:hover {
-  background: #f5f9ff;
+.pill-category-percent {
+  font-size: 10px;
+
+  font-weight: 600;
+
+  color: #1976d2;
 }
 
-.invest-tab.active {
-  background: #1976d2;
-  color: #ffffff;
-  box-shadow: 0 1px 4px rgba(25, 118, 210, 0.35);
+.pill-category-amount {
+  font-size: 11px;
+
+  font-weight: 700;
+
+  color: #111827;
+}
+
+/* =========================================================
+   MAIN 4 BOXES
+   ========================================================= */
+
+.fin-pills-lg {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  gap: 10px;
+
+  margin-bottom: 12px;
+
+  align-items: stretch;
+}
+
+/* Main boxes */
+.fin-pills-lg .fin-pill {
+  width: 100%;
+
+  min-width: 0;
+
+  min-height: 56px;
+
+  box-sizing: border-box;
+
+  padding: 10px 16px;
+
+  font-size: 14px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+}
+
+/* Label */
+.fin-pills-lg .fin-pill-label {
+  font-size: 15px;
+
+  font-weight: 600;
+}
+
+/* Paid / Unpaid */
+.fin-pills-lg .fin-pill-amounts {
+  font-size: 11px;
+
+  gap: 4px 10px;
+}
+
+/* Total */
+.fin-pills-lg .fin-list-total {
+  width: 100%;
+
+  min-width: 0;
+
+  min-height: 56px;
+
+  box-sizing: border-box;
+
+  font-size: 14px;
+
+  padding: 8px 16px;
+
+  border-radius: 8px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  text-align: center;
+}
+
+.assets-only .fin-pill.active {
+  background: #334155;
+  border-color: #334155;
+  box-shadow: 0 2px 8px rgba(51, 65, 85, 0.3);
+}
+
+.assets-only .fin-pill.active .pill-paid {
+  color: #4ade80;
+}
+
+.assets-only .fin-pill.active .pill-unpaid {
+  color: #f87171;
+}
+
+.assets-only .fin-pill:hover {
+  border-color: #334155;
+  color: #334155;
+}
+
+.assets-only .fin-pill.active:hover {
+  color: #fff;
+  border-color: #334155;
+}
+
+/* =========================================================
+   CATEGORY ROW — SECOND ROW
+   ========================================================= */
+
+.assets-only .pill-category-cards {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  display: flex;
+
+  flex-wrap: nowrap;
+
+  gap: 8px;
+
+  margin: 0 0 12px;
+
+  padding: 0;
+
+  overflow-x: auto;
+}
+
+/* Category cards */
+.assets-only .pill-category-card {
+  flex: 0 0 auto;
+
+  min-width: 95px;
+
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   LIST / TABLE — THIRD ROW
+   ========================================================= */
+
+.assets-only .list-table-wrapper {
+  width: 100%;
+
+  max-width: 100%;
+
+  margin-top: 0;
+
+  box-sizing: border-box;
+
+  overflow-x: auto;
+}
+
+.assets-only .list-table {
+  width: 100%;
+
+  min-width: 1600px;
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 800px) {
+  .fin-pills-lg,
+  .assets-only .fin-pills-lg {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 500px) {
+  .fin-pills-lg,
+  .assets-only .fin-pills-lg {
+    grid-template-columns: 1fr;
+  }
+
+  .fin-txn-grid {
+    grid-template-columns:
+      90px
+      1fr
+      100px;
+  }
+
+  .fin-txn-grid span:nth-child(3) {
+    display: none;
+  }
 }

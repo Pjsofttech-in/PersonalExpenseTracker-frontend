@@ -16,6 +16,9 @@ import {
 import "../../css/Charts.css";
 
 function IncomeCategoryChart({ transactions = [] }) {
+  // view: INCOME / EXPENSE
+  // (Assets & Liabilities चा वेगळा chart आहे — AssetsLiabilityChart.jsx)
+
   const [view, setView] = useState("INCOME");
 
   const [chartMode, setChartMode] = useState("PIE");
@@ -211,6 +214,8 @@ function IncomeCategoryChart({ transactions = [] }) {
           </button>
         </div>
 
+        {/* TIMEFRAME — chart मधला स्वतःचा dropdown */}
+
         <select
           className="chart-timeframe-select"
           value={timeframe}
@@ -249,6 +254,9 @@ function IncomeCategoryChart({ transactions = [] }) {
                   outerRadius={100}
                   innerRadius={55}
                   paddingAngle={3}
+                  label={({ percent }) =>
+                    `${(Number(percent || 0) * 100).toFixed(1)}%`
+                  }
                 >
                   {chartData.map((entry, index) => (
                     <Cell
