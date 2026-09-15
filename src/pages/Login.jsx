@@ -9,7 +9,7 @@ import {
 } from "react-icons/fa";
 
 import { loginUser } from "../utils/auth";
-import { apiLogin } from "../utils/api";
+import { apiLogin, OAUTH_GOOGLE_URL } from "../utils/api";
 import { ensureDefaultsOnBackend } from "../utils/backendData";
 
 import "../css/Login.css";
@@ -52,12 +52,14 @@ function Login() {
 
     setError("");
 
+    /* BACKEND LOGIN → JWT token */
+
     try {
       const cleanEmail = email.trim().toLowerCase();
 
       await apiLogin(cleanEmail, password);
 
-      // DEFAULT CATEGORIES
+      // DEFAULT CATEGORIES — 0 असतील तरच तयार होतात
 
       await ensureDefaultsOnBackend();
 
@@ -172,7 +174,7 @@ function Login() {
           type="button"
           className="google-btn"
           onClick={() => {
-            setError("Google login needs a backend — use email login for now.");
+            window.location.href = OAUTH_GOOGLE_URL;
           }}
         >
           <FaGoogle />

@@ -1,8 +1,13 @@
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 
+export const OAUTH_GOOGLE_URL =
+  (import.meta.env.VITE_API_URL ?? "") + "/oauth2/authorization/google";
+
 const TOKEN_KEY = "pet_token";
 
 export const getToken = () => localStorage.getItem(TOKEN_KEY);
+
+export const saveToken = (token) => localStorage.setItem(TOKEN_KEY, token);
 
 export const clearToken = () => localStorage.removeItem(TOKEN_KEY);
 

@@ -12,6 +12,7 @@ import { getCurrentUser, AUTH_ENABLED } from "./utils/auth";
 
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
+import OAuth2Success from "./pages/OAuth2Success";
 import Register from "./pages/Register";
 import AddIncome from "./pages/income/AddIncome";
 import Settings from "./pages/Settings";
@@ -23,8 +24,6 @@ import Assets from "./pages/Assets";
 /* =========================================
    AUTH GUARDS
    ========================================= */
-
-// PRIVATE ROUTE — login नसेल तर /login वर पाठवते
 
 function PrivateRoute({ children }) {
   if (!AUTH_ENABLED) {
@@ -40,8 +39,6 @@ function PrivateRoute({ children }) {
   return children;
 }
 
-// PUBLIC ONLY — login असेल तर /login, /register वरून dashboard वर पाठवते
-
 function PublicOnlyRoute({ children }) {
   const currentUser = getCurrentUser();
 
@@ -53,7 +50,7 @@ function PublicOnlyRoute({ children }) {
 }
 
 /* =========================================
-   NAVIGATION — login / register वर लपवते
+   NAVIGATION
    ========================================= */
 
 function ConditionalNavigation() {
@@ -79,8 +76,6 @@ function App() {
       <ConditionalNavigation />
 
       <Routes>
-        {/* PUBLIC — login असेल तर dashboard वर */}
-
         <Route
           path="/login"
           element={
@@ -99,7 +94,7 @@ function App() {
           }
         />
 
-        {/* PRIVATE — login नंतरच */}
+        <Route path="/oauth2/success" element={<OAuth2Success />} />
 
         <Route
           path="/"
