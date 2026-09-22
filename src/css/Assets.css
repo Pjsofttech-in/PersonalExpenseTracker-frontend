@@ -491,6 +491,44 @@
   .assets-only .fin-pills-lg {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .assets-only .pill-category-cards {
+    flex-direction: column;
+    overflow-x: visible;
+  }
+
+  .assets-only .pill-category-card {
+    width: 100%;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    row-gap: 2px;
+    column-gap: 12px;
+    padding: 10px 12px;
+  }
+
+  .assets-only .pill-category-name {
+    grid-column: 1;
+    grid-row: 1;
+    font-size: 13px;
+    text-align: left;
+  }
+
+  .assets-only .pill-category-stats {
+    display: contents;
+  }
+
+  .assets-only .pill-category-percent {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .assets-only .pill-category-amount {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    font-size: 12px;
+  }
 }
 
 @media (max-width: 500px) {
