@@ -156,19 +156,7 @@ function Settings() {
           await apiDeleteBank(editId);
         }
 
-        try {
-          await apiAddBank(payload);
-        } catch (error) {
-          if (
-            payload.accountType === "SALARY" ||
-            payload.accountType === "OTHER"
-          ) {
-            throw new Error(
-              "Backend update required for Salary/Other account type. Please use Savings/Current until the backend AccountType enum is updated.",
-            );
-          }
-          throw error;
-        }
+        await apiAddBank(payload);
       }
 
       await loadAll();
