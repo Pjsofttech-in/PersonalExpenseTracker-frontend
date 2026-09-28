@@ -104,6 +104,25 @@ export const apiRegister = ({ name, phoneNumber, email, password }) =>
     auth: false,
   });
 
+export const apiGetNetWorth = () => request("/api/net-worth");
+
+export const apiGetNetWorthTarget = () => request("/api/net-worth/target");
+
+export const apiSaveNetWorthTarget = (body) =>
+  request("/api/net-worth/target", { method: "PUT", body });
+
+export const apiDeleteNetWorthTarget = () =>
+  request("/api/net-worth/target", { method: "DELETE" });
+
+export const apiGetNetWorthProjection = () =>
+  request("/api/net-worth/projection");
+
+export const apiTakeNetWorthSnapshot = () =>
+  request("/api/net-worth/snapshot", { method: "POST" });
+
+export const apiGetNetWorthSnapshots = () =>
+  request("/api/net-worth/snapshots");
+
 export const apiLogin = async (email, password) => {
   const response = await fetch(BASE_URL + "/pjsofttech_welcome/login", {
     method: "POST",

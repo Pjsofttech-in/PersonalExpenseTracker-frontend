@@ -6,7 +6,7 @@ import { getCurrentUser, AUTH_ENABLED } from "../../utils/auth";
 import "../../css/TopNavigation.css";
 
 function TopNavigation() {
-  // CURRENT USER
+  // CURRENT USER (login वर update होते)
 
   const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
 
@@ -23,6 +23,9 @@ function TopNavigation() {
       window.removeEventListener("storage", syncUser);
     };
   }, []);
+
+  // NAV LINKS — AUTH_ENABLED false असताना
+  // login नसलं तरी दिसतात
 
   const showNavLinks = AUTH_ENABLED ? Boolean(currentUser) : true;
 
@@ -52,6 +55,10 @@ function TopNavigation() {
 
           <NavLink to="/liabilities" className="nav-button">
             Liabilities
+          </NavLink>
+
+          <NavLink to="/networth" className="nav-button">
+            Net Worth
           </NavLink>
 
           <NavLink to="/users" className="nav-button">

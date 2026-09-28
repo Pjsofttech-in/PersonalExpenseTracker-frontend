@@ -648,7 +648,7 @@ function AddIncome() {
             name="particular"
             value={formData.particular}
             onChange={handleChange}
-            placeholder="Enter particular"
+            placeholder=" "
           />
         </div>
 
@@ -661,7 +661,7 @@ function AddIncome() {
               name="amount"
               value={formData.amount}
               onChange={handleChange}
-              placeholder="0"
+              placeholder=" "
               min="0"
             />
           </div>
@@ -688,7 +688,7 @@ function AddIncome() {
                     name="gstPercent"
                     value={formData.gstPercent}
                     onChange={handleChange}
-                    placeholder="%"
+                    placeholder=" "
                     min="0"
                   />
                 </div>
@@ -701,7 +701,7 @@ function AddIncome() {
                     name="gstNumber"
                     value={formData.gstNumber}
                     onChange={handleChange}
-                    placeholder="GST Number"
+                    placeholder=" "
                   />
                 </div>
               </>
@@ -729,7 +729,7 @@ function AddIncome() {
                   name="tdsPercent"
                   value={formData.tdsPercent}
                   onChange={handleChange}
-                  placeholder="%"
+                  placeholder=" "
                   min="0"
                 />
               </div>
@@ -847,7 +847,7 @@ function AddIncome() {
                   name="transactionId"
                   value={formData.transactionId}
                   onChange={handleChange}
-                  placeholder="Transaction ID"
+                  placeholder=" "
                 />
               </div>
             )}
@@ -861,7 +861,7 @@ function AddIncome() {
             name="notes"
             value={formData.notes}
             onChange={handleChange}
-            placeholder="Enter notes"
+            placeholder=" "
           />
         </div>
 

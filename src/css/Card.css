@@ -1,6 +1,6 @@
 .balance-section {
   width: 100%;
-  margin-top: 25px;
+  margin-top: 20px;
 }
 
 /* =========================================
@@ -45,7 +45,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .card-top h4 {

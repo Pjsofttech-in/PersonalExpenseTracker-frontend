@@ -13,6 +13,7 @@ import { getCurrentUser, AUTH_ENABLED } from "./utils/auth";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import OAuth2Success from "./pages/OAuth2Success";
+import NetWorth from "./pages/NetWorth";
 import Register from "./pages/Register";
 import AddIncome from "./pages/income/AddIncome";
 import Settings from "./pages/Settings";
@@ -50,7 +51,7 @@ function PublicOnlyRoute({ children }) {
 }
 
 /* =========================================
-   NAVIGATION
+   NAVIGATION — login 
    ========================================= */
 
 function ConditionalNavigation() {
@@ -76,6 +77,8 @@ function App() {
       <ConditionalNavigation />
 
       <Routes>
+        {/* PUBLIC — login असेल तर dashboard वर */}
+
         <Route
           path="/login"
           element={
@@ -95,6 +98,8 @@ function App() {
         />
 
         <Route path="/oauth2/success" element={<OAuth2Success />} />
+
+        {/* PRIVATE — login नंतरच */}
 
         <Route
           path="/"
@@ -133,6 +138,15 @@ function App() {
         />
 
         <Route
+          path="/networth"
+          element={
+            <PrivateRoute>
+              <NetWorth />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
           path="/liabilities"
           element={
             <PrivateRoute>
@@ -158,6 +172,8 @@ function App() {
             </PrivateRoute>
           }
         />
+
+        {/* OLD ROUTE — RecentTransactions चे edit बटण इथे जात होतं (आता fix आहे) */}
 
         <Route
           path="/add-income"

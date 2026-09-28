@@ -17,7 +17,7 @@
 .dashboard-content {
   width: 100%;
   box-sizing: border-box;
-  padding: 20px 25px 40px;
+  padding: 12px 25px 40px;
 }
 
 /* =========================================
@@ -132,14 +132,15 @@
   }
 }
 
-.dashboard-al-pills {
-  margin-bottom: 14px;
+.dashboard .dashboard-al-pills {
+  flex-wrap: wrap;
+  margin-bottom: 8px;
 }
 
 .dashboard-al-pills .fin-pill {
   flex: 1 1 130px;
   min-width: 130px;
-  padding: 8px 10px;
+  padding: 6px 10px;
 }
 
 .dashboard-al-pills .fin-pill-amounts {

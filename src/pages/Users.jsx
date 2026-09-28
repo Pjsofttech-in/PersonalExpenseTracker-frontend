@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FaEdit, FaTrash, FaPlus, FaTimes } from "react-icons/fa";
+import { FaTrash, FaPlus, FaTimes } from "react-icons/fa";
 
 import { loadContactsFromBackend } from "../utils/backendData";
 import {
@@ -165,12 +165,6 @@ function Users() {
                     <span>{item.email}</span>
 
                     <span className="actions">
-                      <FaEdit
-                        className="edit-icon"
-                        title="Edit user"
-                        onClick={() => openEditForm(item)}
-                      />
-
                       <FaTrash
                         className="delete-icon"
                         title="Delete user"

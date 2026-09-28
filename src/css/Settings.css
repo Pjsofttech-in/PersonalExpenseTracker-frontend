@@ -191,7 +191,7 @@
 }
 
 .category-grid {
-  grid-template-columns: 80px 1fr 90px 150px;
+  grid-template-columns: 80px 1fr 180px;
 }
 
 .user-grid {
@@ -249,20 +249,10 @@
   gap: 18px;
 }
 
-.edit-icon,
 .delete-icon {
   cursor: pointer;
   font-size: 15px;
   transition: 0.2s;
-}
-
-.edit-icon {
-  color: #2563eb;
-}
-
-.edit-icon:hover {
-  transform: scale(1.15);
-  color: #1d4ed8;
 }
 
 .delete-icon {

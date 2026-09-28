@@ -63,10 +63,47 @@
 }
 
 .floating-field label {
-  font-size: 12px;
-  color: #555;
-  margin-bottom: 5px;
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: #8a97a8;
+  margin: 0;
   font-weight: 500;
+  padding: 0 5px;
+  background: #fff;
+  border-radius: 4px;
+  pointer-events: none;
+  transition: all 0.15s ease;
+  z-index: 1;
+  white-space: nowrap;
+}
+
+.floating-field:focus-within label,
+.floating-field:has(input:not(:placeholder-shown)) label,
+.floating-field:has(select) label,
+.floating-field:has(input[type="date"]) label,
+.floating-field:has(input[readonly]) label,
+.floating-field:has(.select-search-box) label {
+  top: 0;
+  font-size: 11px;
+  color: #555;
+}
+
+.floating-field:focus-within label {
+  color: #1976d2;
+}
+
+.floating-field:has(textarea) label {
+  top: 14px;
+  transform: none;
+}
+
+.floating-field:has(textarea:focus) label,
+.floating-field:has(textarea:not(:placeholder-shown)) label {
+  top: 0;
+  transform: translateY(-50%);
 }
 
 .floating-field input,
@@ -229,14 +266,34 @@
 .small-field {
   flex: 1;
   min-width: 70px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+  position: relative;
 }
 
 .small-field label {
-  font-size: 11px;
+  position: absolute;
+  top: 50%;
+  left: 9px;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: #8a97a8;
+  padding: 0 4px;
+  background: #fff;
+  border-radius: 4px;
+  pointer-events: none;
+  transition: all 0.15s ease;
+  z-index: 1;
+  white-space: nowrap;
+}
+
+.small-field:focus-within label,
+.small-field:has(input:not(:placeholder-shown)) label {
+  top: 0;
+  font-size: 10px;
   color: #555;
+}
+
+.small-field:focus-within label {
+  color: #1976d2;
 }
 
 .small-field input {

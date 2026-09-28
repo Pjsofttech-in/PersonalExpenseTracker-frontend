@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import {
   FaFolder,
   FaUniversity,
-  FaEdit,
   FaTrash,
   FaPlus,
   FaTimes,
@@ -277,12 +276,6 @@ function Settings() {
                       </span>
 
                       <span className="actions">
-                        <FaEdit
-                          className="edit-icon"
-                          title="Edit category"
-                          onClick={() => openEditForm(item)}
-                        />
-
                         <FaTrash
                           className="delete-icon"
                           title="Delete category"
@@ -354,12 +347,6 @@ function Settings() {
                       <span>{item.ifscCode}</span>
 
                       <span className="actions">
-                        <FaEdit
-                          className="edit-icon"
-                          title="Edit bank account"
-                          onClick={() => openEditForm(item)}
-                        />
-
                         <FaTrash
                           className="delete-icon"
                           title="Delete bank account"
