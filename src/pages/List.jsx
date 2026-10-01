@@ -43,7 +43,7 @@ function List() {
 
   const [currentPage, setCurrentPage] = useState(1);
 
-  const rowsPerPage = 25;
+  const rowsPerPage = 10;
 
   // Installment popup
   const [installmentItem, setInstallmentItem] = useState(null);

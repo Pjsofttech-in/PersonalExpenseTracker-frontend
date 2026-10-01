@@ -18,6 +18,9 @@ function Users() {
   const [editId, setEditId] = useState(null);
   const [formData, setFormData] = useState({});
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 10;
+
   const loadUsers = async () => {
     try {
       setUsers(await loadContactsFromBackend());
@@ -116,6 +119,12 @@ function Users() {
     item.username?.toLowerCase().includes(searchUser.toLowerCase()),
   );
 
+  const totalRows = filteredUsers.length;
+  const totalPages = Math.max(Math.ceil(totalRows / rowsPerPage), 1);
+  const safePage = Math.min(currentPage, totalPages);
+  const startIndex = (safePage - 1) * rowsPerPage;
+  const pageUsers = filteredUsers.slice(startIndex, startIndex + rowsPerPage);
+
   return (
     <div className="settings-page">
       <div className="settings-content">
@@ -126,7 +135,10 @@ function Users() {
                 type="text"
                 placeholder="Search User"
                 value={searchUser}
-                onChange={(e) => setSearchUser(e.target.value)}
+                onChange={(e) => {
+                  setSearchUser(e.target.value);
+                  setCurrentPage(1);
+                }}
               />
 
               <div className="total-badge">Total Users: {users.length}</div>
@@ -149,7 +161,7 @@ function Users() {
               {filteredUsers.length === 0 ? (
                 <div className="empty-row">No users found</div>
               ) : (
-                filteredUsers.map((item, index) => (
+                pageUsers.map((item, index) => (
                   <div className="table-data user-grid" key={item.id}>
                     <span>{index + 1}</span>
 
@@ -175,6 +187,57 @@ function Users() {
                 ))
               )}
             </div>
+
+            {totalRows > rowsPerPage && (
+              <div className="pagination">
+                <button
+                  className="page-btn"
+                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                  disabled={safePage === 1}
+                >
+                  &#9664; Prev
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(
+                    (n) =>
+                      n === 1 ||
+                      n === totalPages ||
+                      Math.abs(n - safePage) <= 2,
+                  )
+                  .map((n, idx, arr) => (
+                    <span key={n} className="page-btn-wrap">
+                      {idx > 0 && n - arr[idx - 1] > 1 && (
+                        <span className="page-dots">…</span>
+                      )}
+
+                      <button
+                        className={
+                          n === safePage ? "page-btn active-page" : "page-btn"
+                        }
+                        onClick={() => setCurrentPage(n)}
+                      >
+                        {n}
+                      </button>
+                    </span>
+                  ))}
+
+                <button
+                  className="page-btn"
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(p + 1, totalPages))
+                  }
+                  disabled={safePage === totalPages}
+                >
+                  Next &#9654;
+                </button>
+
+                <span className="page-info">
+                  Page {safePage} / {totalPages} &nbsp;|&nbsp; {totalRows}{" "}
+                  records
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>

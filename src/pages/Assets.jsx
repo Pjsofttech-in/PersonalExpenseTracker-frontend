@@ -49,7 +49,7 @@ const ASSET_PILLS = [
   },
 ];
 
-const ROWS_PER_PAGE = 25;
+const ROWS_PER_PAGE = 10;
 
 function Assets() {
   const navigate = useNavigate();

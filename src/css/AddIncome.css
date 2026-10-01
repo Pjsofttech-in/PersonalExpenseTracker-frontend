@@ -398,27 +398,68 @@
 }
 
 .amount-tax-row {
-  grid-column: 1 / -1;
-  display: flex;
-  gap: 10px;
-  align-items: flex-end;
-  min-width: 0;
+  display: contents;
 }
 
-.amount-tax-row .floating-field {
-  flex: 0 1 22%;
-  min-width: 130px;
+.amount-tax-row > .floating-field:nth-child(1) {
+  grid-column: 3;
 }
 
-.amount-tax-row .tax-section {
-  flex: 0 1 auto;
-  width: auto;
-  min-width: 0;
+.amount-tax-row > .tax-section:nth-child(2) {
+  grid-column: 4;
+  flex-wrap: wrap;
+}
+
+.amount-tax-row > .tax-section:nth-child(3) {
+  grid-column: 4;
+}
+
+.amount-tax-row > .floating-field:nth-child(4) {
+  grid-row: 3;
+  grid-column: 1;
+}
+
+.amount-tax-row > .floating-field:nth-child(5) {
+  grid-row: 3;
+  grid-column: 2;
 }
 
 .amount-tax-row .tax-section .small-field.gst-number {
   flex: 1 1 110px;
   min-width: 100px;
+}
+
+@media (max-width: 1100px) {
+  .amount-tax-row {
+    display: flex;
+    grid-column: 1 / -1;
+    gap: 10px;
+    align-items: flex-end;
+    min-width: 0;
+  }
+
+  .amount-tax-row > .floating-field:nth-child(1),
+  .amount-tax-row > .floating-field:nth-child(4),
+  .amount-tax-row > .floating-field:nth-child(5) {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .amount-tax-row > .tax-section:nth-child(2),
+  .amount-tax-row > .tax-section:nth-child(3) {
+    grid-column: auto;
+  }
+
+  .amount-tax-row .floating-field {
+    flex: 0 1 22%;
+    min-width: 130px;
+  }
+
+  .amount-tax-row .tax-section {
+    flex: 0 1 auto;
+    width: auto;
+    min-width: 0;
+  }
 }
 
 @media (max-width: 1100px) {

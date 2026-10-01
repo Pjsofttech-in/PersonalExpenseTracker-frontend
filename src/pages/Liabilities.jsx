@@ -45,7 +45,7 @@ const LIABILITY_PILLS = [
   },
 ];
 
-const ROWS_PER_PAGE = 25;
+const ROWS_PER_PAGE = 10;
 
 function Liabilities() {
   const navigate = useNavigate();
