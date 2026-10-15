@@ -6,6 +6,7 @@ import { FaInbox } from "react-icons/fa";
 import {
   loadTransactionsFromBackend,
   deleteTransactionFromBackend,
+  payInstallmentOnBackend,
 } from "../utils/backendData";
 
 import "../css/Settings.css";
@@ -47,16 +48,61 @@ const ASSET_PILLS = [
       "Term Insurance",
     ],
   },
+  {
+    id: "OTHER",
+    label: "Other Assets",
+    categories: [],
+  },
 ];
 
-const ROWS_PER_PAGE = 10;
+// सर्व ओळखीच्या asset categories एकत्र — "Other" pill च्या वगळणीसाठी
+const ALL_PILL_CATEGORIES = ASSET_PILLS.flatMap(
+  (pill) => pill.id !== "OTHER" && pill.categories,
+).filter(Boolean);
+
+// [Asset] tag असलेली record ओळखा (Add page मधून asset म्हणून add केलेली)
+const isAssetTagged = (item) => (item.notes || "").includes("[Asset]");
+
+// Pill नुसार record जुळवा: category जुळली तर त्या pill मध्ये;
+// category ओळखीची नाही पण [Asset] tag आहे → "Other Assets" pill मध्ये
+const matchesAssetPill = (item, pill) => {
+  if (pill.id === "OTHER") {
+    return (
+      isAssetTagged(item) && !ALL_PILL_CATEGORIES.includes(item.category || "")
+    );
+  }
+  return pill.categories.includes(item.category || "");
+};
 
 function Assets() {
   const navigate = useNavigate();
 
-  const [assetPill, setAssetPill] = useState("INVESTMENT");
+  // शेवटची निवडलेली pill कायम राहते — page परत उघडलं तरी तिथूनच सुरू
+  const [assetPill, setAssetPill] = useState(
+    () => localStorage.getItem("assetsLastPill") || "INVESTMENT",
+  );
   const [transactions, setTransactions] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Installment popup
+  const [installmentItem, setInstallmentItem] = useState(null);
+
+  const [showAddInstallment, setShowAddInstallment] = useState(false);
+
+  const [newInstallment, setNewInstallment] = useState({
+    amount: "",
+    dueDate: "",
+    remark: "",
+  });
+
+  // MARK COMPLETE
+  const [payingId, setPayingId] = useState(null);
+
+  const [payMethod, setPayMethod] = useState("Cash");
+
+  const [payTxnId, setPayTxnId] = useState("");
 
   const loadTransactions = async () => {
     try {
@@ -70,6 +116,22 @@ function Assets() {
 
   useEffect(() => {
     loadTransactions();
+
+    // Add page वरून आलो तर — नवीन entry ज्या pill मध्ये आहे ती उघडा (एकवेळच)
+    try {
+      const hint = JSON.parse(localStorage.getItem("alPageHint") || "null");
+      if (hint && hint.page === "assets") {
+        const pill = ASSET_PILLS.find(
+          (p) => p.id !== "OTHER" && p.categories.includes(hint.category || ""),
+        );
+        const target = pill ? pill.id : "OTHER";
+        setAssetPill(target);
+        localStorage.setItem("assetsLastPill", target);
+        localStorage.removeItem("alPageHint");
+      }
+    } catch (err) {
+      /* hint चुकीचा असेल तर default pill */
+    }
 
     const handleRefresh = () => loadTransactions();
 
@@ -116,6 +178,23 @@ function Assets() {
   };
 
   const getFuturePending = (item) => {
+    /* Installment entry — फक्त future due-dated
+       unpaid installments ची बेरीज (उदा. पुढील EMI हप्ते) */
+    const installments = item.installments || [];
+
+    if (installments.length > 0) {
+      const todayStr = new Date().toISOString().split("T")[0];
+
+      return installments.reduce(
+        (sum, inst) =>
+          inst.status === "Completed" ||
+          String(inst.dueDate || "").slice(0, 10) <= todayStr
+            ? sum
+            : sum + Number(inst.amount || 0),
+        0,
+      );
+    }
+
     const transactionDate = getTransactionDate(item);
 
     if (!transactionDate) return 0;
@@ -143,7 +222,7 @@ function Assets() {
   const activePill = ASSET_PILLS.find((pill) => pill.id === assetPill);
 
   const pillTransactions = transactions
-    .filter((item) => activePill.categories.includes(item.category || ""))
+    .filter((item) => matchesAssetPill(item, activePill))
     .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
 
   const pillTotal = pillTransactions.reduce(
@@ -152,9 +231,7 @@ function Assets() {
   );
 
   const pillStats = ASSET_PILLS.map((pill) => {
-    const txns = transactions.filter((item) =>
-      pill.categories.includes(item.category || ""),
-    );
+    const txns = transactions.filter((item) => matchesAssetPill(item, pill));
 
     return {
       id: pill.id,
@@ -165,7 +242,13 @@ function Assets() {
     };
   });
 
-  const categoryStats = activePill.categories.map((category) => {
+  // "Other Assets" pill मध्ये त्या records च्याच खर्‍या categories दाखवा
+  const activeCategories =
+    activePill.id === "OTHER"
+      ? [...new Set(pillTransactions.map((t) => t.category || "Uncategorised"))]
+      : activePill.categories;
+
+  const categoryStats = activeCategories.map((category) => {
     const amount = pillTransactions
       .filter((item) => (item.category || "") === category)
       .reduce((sum, item) => sum + getAmount(item), 0);
@@ -179,21 +262,22 @@ function Assets() {
 
   const handlePillClick = (pillId) => {
     setAssetPill(pillId);
+    localStorage.setItem("assetsLastPill", pillId);
 
     setCurrentPage(1);
   };
 
   const totalRows = pillTransactions.length;
 
-  const totalPages = Math.ceil(totalRows / ROWS_PER_PAGE) || 1;
+  const totalPages = Math.ceil(totalRows / rowsPerPage) || 1;
 
   const safePage = Math.min(currentPage, totalPages);
 
-  const startIndex = (safePage - 1) * ROWS_PER_PAGE;
+  const startIndex = (safePage - 1) * rowsPerPage;
 
   const pageTransactions = pillTransactions.slice(
     startIndex,
-    startIndex + ROWS_PER_PAGE,
+    startIndex + rowsPerPage,
   );
 
   const handleEdit = (item) => {
@@ -217,6 +301,120 @@ function Assets() {
       window.dispatchEvent(new Event("transactionUpdated"));
     } catch (error) {
       alert(error.message || "Could not delete. Is the backend running?");
+    }
+  };
+
+  // =========================
+  // INSTALLMENT POPUP
+  // =========================
+
+  const openInstallment = (item) => {
+    setInstallmentItem(item);
+
+    setShowAddInstallment(false);
+
+    setNewInstallment({
+      amount: "",
+      dueDate: "",
+      remark: "",
+    });
+
+    setPayingId(null);
+    setPayMethod("Cash");
+    setPayTxnId("");
+  };
+
+  const closeInstallment = () => {
+    setInstallmentItem(null);
+  };
+
+  // =========================
+  // ADD INSTALLMENT
+  // =========================
+
+  const handleAddInstallment = (e) => {
+    e.preventDefault();
+
+    /* BACKEND MODE: installments transaction तयार
+       करतानाच schedule मध्ये set होतात (backend ला
+       add-installment endpoint नाही). नवीन
+       installment हवा असेल तर transaction edit
+       करा. */
+
+    alert(
+      "Installments are set when the transaction is created (2 auto installments). To change them, edit the transaction.",
+    );
+
+    setShowAddInstallment(false);
+  };
+
+  // =========================
+  // MARK INSTALLMENT COMPLETE
+  // =========================
+
+  const handleOpenPayment = (instId) => {
+    setPayingId(instId);
+    setPayMethod("Cash");
+    setPayTxnId("");
+  };
+
+  // =========================
+  // CONFIRM PAYMENT
+  // =========================
+
+  const handleConfirmPayment = async (instId) => {
+    if (!installmentItem) return;
+
+    if (payMethod === "Bank Transfer" && !payTxnId.trim()) {
+      alert("Please enter transaction ID.");
+      return;
+    }
+
+    const todayStr = new Date().toISOString().split("T")[0];
+
+    const installments = installmentItem.installments || [];
+
+    const targetInst = installments.find((i) => i.id === instId);
+
+    if (!targetInst) return;
+
+    if (targetInst.status === "Completed") return;
+
+    try {
+      /* BACKEND PAYMENT — installment वर amount
+         जातो, backend status update करतो */
+
+      await payInstallmentOnBackend(
+        instId,
+        targetInst.amount,
+        todayStr,
+        payTxnId.trim(),
+      );
+
+      /* Backend वरून पुन्हा सगळं load (paid/pending
+         + status backend compute करतो) */
+
+      const refreshed = await loadTransactionsFromBackend();
+
+      setTransactions(refreshed);
+
+      window.dispatchEvent(new Event("transactionUpdated"));
+
+      const refreshedItem = refreshed.find((i) => i.id === installmentItem.id);
+
+      setInstallmentItem(refreshedItem || null);
+
+      setPayingId(null);
+      setPayMethod("Cash");
+      setPayTxnId("");
+
+      if (refreshedItem && refreshedItem.pending <= 0) {
+        alert(
+          "All installments completed! 🎉 Receipt/Invoice is ready — check the Document column.",
+        );
+      }
+    } catch (error) {
+      alert(error.message || "Payment failed. Is the backend running?");
     }
   };
 
@@ -298,12 +496,8 @@ function Assets() {
               <span className="fin-pill-label">{pill.label}</span>
 
               <span className="fin-pill-amounts">
-                <span className="pill-paid">
-                  Paid: {formatAmount(pill.paid)}
-                </span>
-
-                <span className="pill-unpaid">
-                  Unpaid: {formatAmount(pill.unpaid)}
+                <span className="pill-total">
+                  Total: {formatAmount(pill.amount)}
                 </span>
               </span>
             </button>
@@ -412,8 +606,23 @@ function Assets() {
                   <span>{item.billType || "-"}</span>
 
                   <span>
-                    {item.paymentStatus === "Installment" ? (
-                      <b className="status-installment">Installment</b>
+                    {/* Installments असलेल्या entry साठी button —
+                        click केल्यावर popup उघडतं (List page प्रमाणे) */}
+                    {(item.installments || []).length > 0 &&
+                    item.paymentStatus !== "Complete" ? (
+                      <button
+                        type="button"
+                        className="status-installment"
+                        onClick={() => openInstallment(item)}
+                        title="Click to view installment details"
+                        style={{
+                          cursor: "pointer",
+                          border: "none",
+                          display: "inline-block",
+                        }}
+                      >
+                        Installment
+                      </button>
                     ) : (
                       <b
                         className={
@@ -466,49 +675,683 @@ function Assets() {
           </div>
         </div>
 
-        {totalRows > ROWS_PER_PAGE && (
-          <div className="pagination">
-            <button
-              className="page-btn"
-              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-              disabled={safePage === 1}
-            >
-              ◀ Prev
-            </button>
+        {/* =========================
+            PAGINATION — ERP style
+            (1-25 of 81 items  ‹ 1 2 3 ›  25 / page)
+        ========================= */}
 
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter(
-                (n) =>
-                  n === 1 || n === totalPages || Math.abs(n - safePage) <= 2,
-              )
-              .map((n, idx, arr) => (
-                <span key={n} className="page-btn-wrap">
-                  {idx > 0 && n - arr[idx - 1] > 1 && (
-                    <span className="page-dots">…</span>
-                  )}
+        {totalRows > 0 && (
+          <div className="pagination">
+            <span className="page-count">
+              {startIndex + 1}-{Math.min(startIndex + rowsPerPage, totalRows)}{" "}
+              of {totalRows} items
+            </span>
+
+            {totalPages > 1 && (
+              <div className="page-btns">
+                <button
+                  className="page-btn"
+                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                  disabled={safePage === 1}
+                  title="Previous page"
+                >
+                  ‹
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(
+                    (n) =>
+                      n === 1 ||
+                      n === totalPages ||
+                      Math.abs(n - safePage) <= 2,
+                  )
+                  .map((n, idx, arr) => (
+                    <span key={n} className="page-btn-wrap">
+                      {idx > 0 && n - arr[idx - 1] > 1 && (
+                        <span className="page-dots">…</span>
+                      )}
+
+                      <button
+                        className={
+                          n === safePage ? "page-btn active-page" : "page-btn"
+                        }
+                        onClick={() => setCurrentPage(n)}
+                      >
+                        {n}
+                      </button>
+                    </span>
+                  ))}
+
+                <button
+                  className="page-btn"
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(p + 1, totalPages))
+                  }
+                  disabled={safePage === totalPages}
+                  title="Next page"
+                >
+                  ›
+                </button>
+              </div>
+            )}
+
+            <label className="page-size">
+              <select
+                value={rowsPerPage}
+                onChange={(e) => {
+                  setRowsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                title="Rows per page"
+              >
+                <option value={10}>10 / page</option>
+                <option value={25}>25 / page</option>
+                <option value={50}>50 / page</option>
+                <option value={100}>100 / page</option>
+              </select>
+            </label>
+          </div>
+        )}
+
+        {installmentItem && (
+          <div
+            onClick={closeInstallment}
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "rgba(0, 0, 0, 0.45)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              zIndex: 9999,
+              padding: "20px",
+              boxSizing: "border-box",
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: "700px",
+                maxWidth: "100%",
+                maxHeight: "92vh",
+                overflowY: "auto",
+                background: "#ffffff",
+                borderRadius: "10px",
+                padding: "20px 22px",
+                boxSizing: "border-box",
+                boxShadow: "0 20px 50px rgba(0, 0, 0, 0.25)",
+                fontFamily: "Poppins, sans-serif",
+              }}
+            >
+              {/* HEADER */}
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "14px",
+                }}
+              >
+                <h3
+                  style={{
+                    margin: 0,
+                    fontSize: 18,
+                    fontWeight: 700,
+                    color: "#222",
+                  }}
+                >
+                  Installment Details
+                </h3>
+
+                <button
+                  type="button"
+                  onClick={closeInstallment}
+                  title="Close"
+                  style={{
+                    width: 32,
+                    height: 32,
+                    border: "none",
+                    borderRadius: "50%",
+                    background: "#f3f4f6",
+                    color: "#555",
+                    cursor: "pointer",
+                    fontSize: 14,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* ============ TRANSACTION INFO  ============ */}
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr 1fr",
+                  gap: 10,
+                  marginBottom: 14,
+                }}
+              >
+                {[
+                  ["User", installmentItem.user || "-"],
+                  ["Category", installmentItem.category || "-"],
+                  ["Particular", installmentItem.particular || "-"],
+                  ["Date", fmtDate(installmentItem.date)],
+                  ["Due Date", fmtDate(installmentItem.dueDate)],
+                  ["Payment Method", installmentItem.paymentMethod || "-"],
+                ].map(([label, value], i) => (
+                  <div
+                    key={i}
+                    style={{
+                      background: "#f8fafc",
+                      border: "1px solid #eef2f7",
+                      borderRadius: 8,
+                      padding: "9px 12px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: "block",
+                        fontSize: 10,
+                        fontWeight: 600,
+                        textTransform: "uppercase",
+                        letterSpacing: 0.4,
+                        color: "#94a3b8",
+                        marginBottom: 3,
+                      }}
+                    >
+                      {label}
+                    </span>
+                    <b
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: label === "Due Date" ? "#d97706" : "#334155",
+                      }}
+                    >
+                      {value}
+                    </b>
+                  </div>
+                ))}
+              </div>
+
+              {/* ============ SUMMARY LINE ============ */}
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "28px",
+                  flexWrap: "wrap",
+                  marginBottom: 14,
+                }}
+              >
+                <span style={{ fontSize: 14, color: "#666", fontWeight: 500 }}>
+                  Total:{" "}
+                  <b style={{ color: "#1976d2", fontSize: 15 }}>
+                    ₹{getAmount(installmentItem).toLocaleString("en-IN")}
+                  </b>
+                </span>
+
+                <span style={{ fontSize: 14, color: "#666", fontWeight: 500 }}>
+                  Paid:{" "}
+                  <b style={{ color: "#16a34a", fontSize: 15 }}>
+                    ₹{getPaid(installmentItem).toLocaleString("en-IN")}
+                  </b>
+                </span>
+
+                <span style={{ fontSize: 14, color: "#666", fontWeight: 500 }}>
+                  Pending:{" "}
+                  <b style={{ color: "#d97706", fontSize: 15 }}>
+                    ₹
+                    {Math.max(
+                      getAmount(installmentItem) - getPaid(installmentItem),
+                      0,
+                    ).toLocaleString("en-IN")}
+                  </b>
+                </span>
+              </div>
+
+              {/* ============ INSTALLMENTS TABLE ============ */}
+
+              <div
+                style={{
+                  border: "1px solid #e2e8f0",
+                  borderRadius: 8,
+                  overflow: "hidden",
+                  marginBottom: 14,
+                }}
+              >
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1.3fr 0.9fr 1fr 1fr 1.4fr",
+                    alignItems: "center",
+                    textAlign: "center",
+                    background: "#6495ed",
+                    color: "#ffffff",
+                    fontSize: 10,
+                    fontWeight: 600,
+                    textTransform: "uppercase",
+                    letterSpacing: 0.4,
+                    padding: "11px 12px",
+                  }}
+                >
+                  <span>Invoice No</span>
+                  <span>Amount</span>
+                  <span>Due Date</span>
+                  <span>Pay Date</span>
+                  <span>Status</span>
+                </div>
+
+                {(installmentItem.installments || []).length === 0 ? (
+                  <div
+                    style={{
+                      padding: 24,
+                      textAlign: "center",
+                      fontSize: 12,
+                      color: "#999",
+                    }}
+                  >
+                    No installments added yet
+                  </div>
+                ) : (
+                  (installmentItem.installments || []).map((inst, idx) => {
+                    const isPaying = payingId === inst.id;
+
+                    return (
+                      <div key={inst.id}>
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "1.3fr 0.9fr 1fr 1fr 1.4fr",
+                            alignItems: "center",
+                            textAlign: "center",
+                            padding: "10px 12px",
+                            fontSize: 12,
+                            color: "#333",
+                            borderBottom: "1px solid #f1f5f9",
+                            background: idx % 2 === 0 ? "#ffffff" : "#fafbfd",
+                          }}
+                        >
+                          <span style={{ fontWeight: 600, color: "#1976d2" }}>
+                            {inst.invoiceNo}
+                          </span>
+
+                          <span style={{ fontWeight: 600 }}>
+                            ₹{Number(inst.amount || 0).toLocaleString("en-IN")}
+                          </span>
+
+                          <span>{fmtDate(inst.dueDate)}</span>
+
+                          <span>{fmtDate(inst.paymentDate)}</span>
+
+                          <span>
+                            {inst.status === "Completed" ? (
+                              <b
+                                style={{
+                                  color: "#20b33b",
+                                  fontWeight: 600,
+                                  fontSize: 11,
+                                }}
+                              >
+                                Completed
+                              </b>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleOpenPayment(inst.id)}
+                                style={{
+                                  border: "none",
+                                  borderRadius: 5,
+                                  background: "#ff8500",
+                                  color: "#ffffff",
+                                  fontFamily: "Poppins, sans-serif",
+                                  fontSize: 9,
+                                  fontWeight: 600,
+                                  padding: "6px 10px",
+                                  cursor: "pointer",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                MARK COMPLETE
+                              </button>
+                            )}
+                          </span>
+                        </div>
+
+                        {/* PAYMENT PANEL - method + txn id */}
+
+                        {isPaying && (
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 10,
+                              flexWrap: "wrap",
+                              padding: "10px 12px",
+                              background: "#f0f6ff",
+                              borderBottom: "1px solid #e2e8f0",
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontSize: 11,
+                                fontWeight: 600,
+                                color: "#555",
+                              }}
+                            >
+                              Payment Method:
+                            </span>
+
+                            <select
+                              value={payMethod}
+                              onChange={(e) => setPayMethod(e.target.value)}
+                              style={{
+                                height: 32,
+                                padding: "0 8px",
+                                border: "1px solid #cbd5e1",
+                                borderRadius: 5,
+                                fontFamily: "Poppins, sans-serif",
+                                fontSize: 12,
+                                color: "#333",
+                                background: "#ffffff",
+                                outline: "none",
+                                cursor: "pointer",
+                              }}
+                            >
+                              <option value="Cash">Cash</option>
+                              <option value="Bank Transfer">
+                                Bank Transfer
+                              </option>
+                              <option value="Cheque">Cheque</option>
+                              <option value="UPI">UPI</option>
+                            </select>
+
+                            {payMethod === "Bank Transfer" && (
+                              <input
+                                type="text"
+                                value={payTxnId}
+                                onChange={(e) => setPayTxnId(e.target.value)}
+                                placeholder="Txn ID"
+                                style={{
+                                  height: 32,
+                                  width: 150,
+                                  padding: "0 8px",
+                                  border: "1px solid #cbd5e1",
+                                  borderRadius: 5,
+                                  fontFamily: "Poppins, sans-serif",
+                                  fontSize: 12,
+                                  color: "#333",
+                                  background: "#ffffff",
+                                  outline: "none",
+                                  boxSizing: "border-box",
+                                }}
+                              />
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => handleConfirmPayment(inst.id)}
+                              style={{
+                                height: 32,
+                                padding: "0 16px",
+                                border: "none",
+                                borderRadius: 5,
+                                background: "#16a34a",
+                                color: "#ffffff",
+                                fontFamily: "Poppins, sans-serif",
+                                fontSize: 11,
+                                fontWeight: 600,
+                                cursor: "pointer",
+                              }}
+                            >
+                              Confirm Payment
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setPayingId(null)}
+                              style={{
+                                height: 32,
+                                padding: "0 12px",
+                                border: "none",
+                                borderRadius: 5,
+                                background: "#e2e8f0",
+                                color: "#555",
+                                fontFamily: "Poppins, sans-serif",
+                                fontSize: 11,
+                                fontWeight: 600,
+                                cursor: "pointer",
+                              }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* ============ पूर्ण झालं तर - Download Receipt/Invoice ============ */}
+
+              {installmentItem.paymentStatus === "Complete" && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    marginBottom: 10,
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => downloadDocument(installmentItem)}
+                    style={{
+                      border: "none",
+                      borderRadius: 5,
+                      background: "#16a34a",
+                      color: "#ffffff",
+                      fontFamily: "Poppins, sans-serif",
+                      fontSize: 11,
+                      fontWeight: 600,
+                      padding: "9px 18px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    ⬇ Download{" "}
+                    {installmentItem.billType === "Invoice"
+                      ? "Invoice"
+                      : "Receipt"}
+                  </button>
+                </div>
+              )}
+
+              {/* ============ खाली - ADD INSTALLMENT BUTTON ============ */}
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  marginBottom: showAddInstallment ? "10px" : "0px",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setShowAddInstallment(!showAddInstallment)}
+                  style={{
+                    border: "none",
+                    borderRadius: 5,
+                    background: "#1976d2",
+                    color: "#ffffff",
+                    fontFamily: "Poppins, sans-serif",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    letterSpacing: 0.5,
+                    padding: "9px 18px",
+                    cursor: "pointer",
+                  }}
+                >
+                  {showAddInstallment ? "✕ CANCEL" : "ADD INSTALLMENT"}
+                </button>
+              </div>
+
+              {/* ============ खाली - ADD INSTALLMENT FORM ============ */}
+
+              {showAddInstallment && (
+                <form
+                  onSubmit={handleAddInstallment}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr 1.2fr auto",
+                    gap: 12,
+                    alignItems: "end",
+                    background: "#f8fafc",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: 8,
+                    padding: 14,
+                  }}
+                >
+                  <label
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 5,
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: "#555",
+                    }}
+                  >
+                    Amount
+                    <input
+                      type="number"
+                      value={newInstallment.amount}
+                      onChange={(e) =>
+                        setNewInstallment((prev) => ({
+                          ...prev,
+                          amount: e.target.value,
+                        }))
+                      }
+                      placeholder="Enter amount"
+                      min="1"
+                      style={{
+                        height: 38,
+                        padding: "0 10px",
+                        border: "1px solid #cbd5e1",
+                        borderRadius: 6,
+                        fontFamily: "Poppins, sans-serif",
+                        fontSize: 12,
+                        color: "#333",
+                        outline: "none",
+                        boxSizing: "border-box",
+                        width: "100%",
+                        background: "#ffffff",
+                      }}
+                    />
+                  </label>
+
+                  <label
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 5,
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: "#555",
+                    }}
+                  >
+                    Due Date
+                    <input
+                      type="date"
+                      value={newInstallment.dueDate}
+                      onChange={(e) =>
+                        setNewInstallment((prev) => ({
+                          ...prev,
+                          dueDate: e.target.value,
+                        }))
+                      }
+                      style={{
+                        height: 38,
+                        padding: "0 10px",
+                        border: "1px solid #cbd5e1",
+                        borderRadius: 6,
+                        fontFamily: "Poppins, sans-serif",
+                        fontSize: 12,
+                        color: "#333",
+                        outline: "none",
+                        boxSizing: "border-box",
+                        width: "100%",
+                        background: "#ffffff",
+                      }}
+                    />
+                  </label>
+
+                  <label
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 5,
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: "#555",
+                    }}
+                  >
+                    Remark
+                    <input
+                      type="text"
+                      value={newInstallment.remark}
+                      onChange={(e) =>
+                        setNewInstallment((prev) => ({
+                          ...prev,
+                          remark: e.target.value,
+                        }))
+                      }
+                      placeholder="e.g. 3rd installment"
+                      style={{
+                        height: 38,
+                        padding: "0 10px",
+                        border: "1px solid #cbd5e1",
+                        borderRadius: 6,
+                        fontFamily: "Poppins, sans-serif",
+                        fontSize: 12,
+                        color: "#333",
+                        outline: "none",
+                        boxSizing: "border-box",
+                        width: "100%",
+                        background: "#ffffff",
+                      }}
+                    />
+                  </label>
 
                   <button
-                    className={
-                      n === safePage ? "page-btn active-page" : "page-btn"
-                    }
-                    onClick={() => setCurrentPage(n)}
+                    type="submit"
+                    style={{
+                      height: 38,
+                      padding: "0 22px",
+                      border: "none",
+                      borderRadius: 6,
+                      background: "#16a34a",
+                      color: "#ffffff",
+                      fontFamily: "Poppins, sans-serif",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
+                    }}
                   >
-                    {n}
+                    SAVE
                   </button>
-                </span>
-              ))}
-
-            <button
-              className="page-btn"
-              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-              disabled={safePage === totalPages}
-            >
-              Next ▶
-            </button>
-
-            <span className="page-info">
-              Page {safePage} / {totalPages} &nbsp;|&nbsp; {totalRows} records
-            </span>
+                </form>
+              )}
+            </div>
           </div>
         )}
       </div>

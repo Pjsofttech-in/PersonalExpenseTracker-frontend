@@ -18,7 +18,11 @@ import {
   apiGetNetWorthProjection,
   apiTakeNetWorthSnapshot,
   apiGetNetWorthSnapshots,
+  apiGetAssets,
+  apiGetLiabilities,
 } from "../utils/api";
+
+import { loadTransactionsFromBackend } from "../utils/backendData";
 
 import "../css/NetWorth.css";
 
@@ -43,10 +47,80 @@ function NetWorth() {
     inflationRate: "",
   });
 
+  /* ═══ पूर्ण Net Worth — records + tagged transactions ═══
+     Backend च्या asset-record bug मुळे काही records तयार होऊ
+     शकत नाहीत. म्हणून [Asset]/[Liability] tagged transactions
+     पण गणनेत घेतल्या जातात — जे already records मध्ये आहेत
+     त्यांचे double-counting टळतं. काहीही write होत नाही. */
+  const computeFullNetWorth = async (base) => {
+    try {
+      const [txns, assets, liabilities] = await Promise.all([
+        loadTransactionsFromBackend().catch(() => []),
+        apiGetAssets().catch(() => []),
+        apiGetLiabilities().catch(() => []),
+      ]);
+
+      const recordKey = (name, amount, date) =>
+        String(name || "")
+          .trim()
+          .toLowerCase() +
+        "|" +
+        Number(amount || 0) +
+        "|" +
+        String(date || "").slice(0, 10);
+
+      const assetKeys = new Set(
+        (Array.isArray(assets) ? assets : []).map((a) =>
+          recordKey(a.name, a.purchaseValue ?? a.currentValue, a.purchaseDate),
+        ),
+      );
+      const liabKeys = new Set(
+        (Array.isArray(liabilities) ? liabilities : []).map((l) =>
+          recordKey(
+            l.name,
+            l.originalAmount ?? l.outstandingAmount,
+            l.startDate,
+          ),
+        ),
+      );
+
+      let extraAssets = 0;
+      let extraLiabilities = 0;
+
+      for (const t of Array.isArray(txns) ? txns : []) {
+        const notes = t.notes || "";
+        if (!notes.includes("[Asset]") && !notes.includes("[Liability]"))
+          continue;
+
+        const key = recordKey(t.particular, t.amount, t.date);
+
+        if (notes.includes("[Asset]") && !assetKeys.has(key)) {
+          extraAssets += Number(t.amount || 0);
+        }
+        if (notes.includes("[Liability]") && !liabKeys.has(key)) {
+          extraLiabilities += Number(t.amount || 0);
+        }
+      }
+
+      const totalAssets = Number(base.totalAssets || 0) + extraAssets;
+      const totalLiabilities =
+        Number(base.totalLiabilities || 0) + extraLiabilities;
+
+      return {
+        ...base,
+        totalAssets,
+        totalLiabilities,
+        netWorth: totalAssets - totalLiabilities,
+      };
+    } catch (err) {
+      return base;
+    }
+  };
+
   const loadAll = async () => {
     try {
       const worthData = await apiGetNetWorth();
-      setNetWorth(worthData);
+      setNetWorth(await computeFullNetWorth(worthData));
 
       let targetData = null;
       try {
@@ -77,6 +151,18 @@ function NetWorth() {
 
   useEffect(() => {
     loadAll();
+
+    // entry add/edit/delete झाल्यावर आणि परत page वर आल्यावर
+    // boxes आपोआप ताज्या होतील
+    const handleRefresh = () => loadAll();
+
+    window.addEventListener("transactionUpdated", handleRefresh);
+    window.addEventListener("focus", handleRefresh);
+
+    return () => {
+      window.removeEventListener("transactionUpdated", handleRefresh);
+      window.removeEventListener("focus", handleRefresh);
+    };
   }, []);
 
   const openNewForm = () => {

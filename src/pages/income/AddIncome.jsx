@@ -1,11 +1,29 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   loadContactsFromBackend,
   loadBanksFromBackend,
   loadCategoriesFromBackend,
   saveTransactionToBackend,
   ensureDefaultsOnBackend,
+  findOrCreateBank,
 } from "../../utils/backendData";
+
+import {
+  apiAddAsset,
+  apiAddLiability,
+  apiGetAssetCategories,
+  apiAddAssetCategory,
+} from "../../utils/api";
+
+// PaymentMethod mapping (backend enum)
+const PAYMENT_MAP = {
+  Cash: "CASH",
+  Bank: "BANK_TRANSFER",
+  UPI: "UPI",
+  Card: "CREDIT_CARD",
+  Cheque: "CHEQUE",
+};
 
 import "../../css/AddIncome.css";
 
@@ -65,6 +83,7 @@ const ALL_LIABILITY_CATEGORY_NAMES = STATIC_LIABILITY_CATEGORIES.flatMap(
 );
 
 function AddIncome() {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [bankAccounts, setBankAccounts] = useState([]);
 
@@ -207,6 +226,21 @@ function AddIncome() {
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
+    // नव्या list मध्ये जुनं category वैध असेल तर तसंच ठेवायचं —
+    // नाहीतर form पूर्ण भरूनही submit अडतं (A/L = None केस)
+    const categoryValidFor = (assetType, entryType) => {
+      if (assetType === "Assets") return ALL_ASSET_CATEGORY_NAMES;
+      if (assetType === "Liabilities") return ALL_LIABILITY_CATEGORY_NAMES;
+      return backendCategories
+        .filter(
+          (c) =>
+            !c.transactionType ||
+            c.transactionType ===
+              (entryType === "Income" ? "INCOME" : "EXPENSE"),
+        )
+        .map((c) => c.name);
+    };
+
     setFormData((prev) => {
       const updatedData = {
         ...prev,
@@ -224,11 +258,23 @@ function AddIncome() {
       }
 
       if (name === "type") {
-        updatedData.category = "";
+        if (
+          !categoryValidFor(updatedData.assetType, value).includes(
+            updatedData.category,
+          )
+        ) {
+          updatedData.category = "";
+        }
       }
 
       if (name === "assetType") {
-        updatedData.category = "";
+        if (
+          !categoryValidFor(value, updatedData.type).includes(
+            updatedData.category,
+          )
+        ) {
+          updatedData.category = "";
+        }
 
         if (value === "Assets" || value === "Liabilities") {
           updatedData.type = "Expense";
@@ -303,7 +349,10 @@ function AddIncome() {
 
   const total = amount + gstAmount - tdsAmount;
 
-  const showTransactionId = formData.paymentStatus === "Complete";
+  // Transaction ID फक्त Complete + Cash-व्यतिरिक्त पद्धतींसाठी
+  // (Cash payment ला transaction ID लागत नाही)
+  const showTransactionId =
+    formData.paymentStatus === "Complete" && formData.paymentMethod !== "Cash";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -357,6 +406,7 @@ function AddIncome() {
 
     if (
       formData.paymentStatus === "Complete" &&
+      formData.paymentMethod !== "Cash" &&
       !formData.transactionId.trim()
     ) {
       setError("Please enter transaction ID.");
@@ -397,18 +447,127 @@ function AddIncome() {
         editId,
       );
 
+      // Asset / Liability record तयार करा (Net Worth page वर दिसावं म्हणून)
+      // फक्त NEW save वर — edit वर duplicate होणार नाही
+      let netWorthNote = "";
+
+      if (!editId && formData.assetType === "Assets") {
+        try {
+          // खऱ्या backend ला assetCategoryId सक्तीचा — मिळवा किंवा तयार करा
+          let assetCategoryId = null;
+          try {
+            const wanted = (formData.category || "Other").trim() || "Other";
+
+            const findByName = (list) =>
+              (Array.isArray(list) ? list : []).find(
+                (c) => (c.name || "").toLowerCase() === wanted.toLowerCase(),
+              );
+
+            let cat = findByName(await apiGetAssetCategories());
+
+            if (!cat) {
+              try {
+                cat = await apiAddAssetCategory(wanted);
+              } catch (dupErr) {
+                // नाव आधीच असेल तर duplicate 500 येतो —
+                // list पुन्हा घेऊन तिथून शोधून घ्या
+                cat = findByName(await apiGetAssetCategories());
+              }
+            }
+
+            assetCategoryId = cat && cat.id ? cat.id : null;
+          } catch (catErr) {
+            console.warn("Asset category मिळालं नाही:", catErr.message);
+          }
+
+          // BANK_TRANSFER साठी bankId सक्तीचा —
+          // bank न मिळाल्यास CASH वर पाठवा (asset तरी तयार व्हावं)
+          let method = PAYMENT_MAP[formData.paymentMethod] || "CASH";
+          let bankId = null;
+          if (method === "BANK_TRANSFER") {
+            try {
+              bankId = await findOrCreateBank(formData.bankAccount);
+            } catch (bankErr) {
+              console.warn("Bank मिळालं नाही:", bankErr.message);
+            }
+            if (!bankId) method = "CASH";
+          }
+
+          await apiAddAsset({
+            name: formData.particular.trim(),
+            assetGroup: "OTHER",
+            type: "OTHER",
+            description: formData.category || "",
+            purchaseValue: amount,
+            currentValue: amount,
+            purchaseDate: formData.date,
+            paymentMethod: method,
+            assetCategoryId: assetCategoryId,
+            bankId: bankId,
+          });
+          netWorthNote = " (Net Worth updated \u2713)";
+        } catch (assetErr) {
+          console.warn("Asset record तयार झालं नाही:", assetErr.message);
+          netWorthNote =
+            "\n\u26A0 Net Worth record तयार झालं नाही: " +
+            (assetErr.message || "unknown error");
+        }
+      }
+
+      if (!editId && formData.assetType === "Liabilities") {
+        try {
+          await apiAddLiability({
+            name: formData.particular.trim(),
+            liabilityGroup: "OTHER",
+            type: "OTHER",
+            description: formData.category || "",
+            originalAmount: amount,
+            startDate: formData.date,
+            dueDate: formData.dueDate || null,
+          });
+          netWorthNote = " (Net Worth updated \u2713)";
+        } catch (liabErr) {
+          console.warn("Liability record तयार झालं नाही:", liabErr.message);
+          netWorthNote =
+            "\n\u26A0 Net Worth record तयार झालं नाही: " +
+            (liabErr.message || "unknown error");
+        }
+      }
+
       localStorage.removeItem("editTransaction");
       setEditId(null);
 
       window.dispatchEvent(new Event("transactionUpdated"));
 
       alert(
-        editId
+        (editId
           ? "Transaction updated successfully!"
-          : "Transaction added successfully!",
+          : "Transaction added successfully!") + netWorthNote,
       );
 
       handleReset();
+
+      // Asset/Liability entry → थेट त्या page वर, योग्य pill सोबत —
+      // नवीन entry लगेच समोर दिसेल
+      if (formData.assetType === "Assets") {
+        localStorage.setItem(
+          "alPageHint",
+          JSON.stringify({
+            page: "assets",
+            category: formData.category || "",
+          }),
+        );
+        navigate("/assets");
+      } else if (formData.assetType === "Liabilities") {
+        localStorage.setItem(
+          "alPageHint",
+          JSON.stringify({
+            page: "liabilities",
+            category: formData.category || "",
+          }),
+        );
+        navigate("/liabilities");
+      }
     } catch (error) {
       alert(error.message || "Could not save. Is the backend running?");
     }
@@ -459,7 +618,7 @@ function AddIncome() {
       {error && <div className="form-error">{error}</div>}
 
       <form className="income-expense-form" onSubmit={handleSubmit}>
-        <div className="type-row">
+        <div className="form-row form-row-4">
           <div className="floating-field">
             <label>Type</label>
 
@@ -478,181 +637,172 @@ function AddIncome() {
               value={formData.assetType}
               onChange={handleChange}
             >
-              <option value="">None</option>
-
               <option value="Assets">Assets</option>
 
               <option value="Liabilities">Liabilities</option>
             </select>
           </div>
-        </div>
 
-        <div className="floating-field search-field">
-          <label>User</label>
+          <div className="floating-field search-field">
+            <label>User</label>
 
-          <div
-            className="select-search-box"
-            onClick={() => {
-              setShowUserSearch((prev) => !prev);
-              setShowCategorySearch(false);
-            }}
-          >
-            <span
-              className={formData.user ? "selected-value" : "placeholder-value"}
+            <div
+              className="select-search-box"
+              onClick={() => {
+                setShowUserSearch((prev) => !prev);
+                setShowCategorySearch(false);
+              }}
             >
-              {formData.user || "Select User"}
-            </span>
+              <span
+                className={
+                  formData.user ? "selected-value" : "placeholder-value"
+                }
+              >
+                {formData.user || "\u00a0"}
+              </span>
 
-            <span className="select-arrow">▼</span>
+              <span className="select-arrow">▼</span>
+            </div>
+
+            {showUserSearch && (
+              <div
+                className="search-dropdown"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="floating-field">
+                  <label>Search User</label>
+
+                  <input
+                    type="text"
+                    className="dropdown-search-input"
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+
+                {filteredUsers.length === 0 ? (
+                  <div className="dropdown-empty">No users found</div>
+                ) : (
+                  filteredUsers.map((user) => (
+                    <div
+                      key={user.id}
+                      className="dropdown-item"
+                      onClick={() => handleSelectUser(user.username)}
+                    >
+                      {user.username}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
 
-          {showUserSearch && (
+          <div className="floating-field">
+            <label>Date</label>
+
+            <input
+              type="date"
+              name="date"
+              value={formData.date}
+              onChange={handleChange}
+            />
+          </div>
+        </div>
+
+        <div className="form-row form-row-5">
+          <div className="floating-field search-field">
+            <label>Category</label>
+
             <div
-              className="search-dropdown"
-              onClick={(e) => e.stopPropagation()}
+              className="select-search-box"
+              onClick={() => {
+                setShowCategorySearch((prev) => !prev);
+                setShowUserSearch(false);
+              }}
             >
-              <input
-                type="text"
-                className="dropdown-search-input"
-                placeholder="Search User..."
-                value={userSearch}
-                onChange={(e) => setUserSearch(e.target.value)}
-                autoFocus
-              />
-
-              <div
-                className="dropdown-item select-option"
-                onClick={() => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    user: "",
-                  }));
-
-                  setUserSearch("");
-                  setShowUserSearch(false);
-                }}
+              <span
+                className={
+                  formData.category ? "selected-value" : "placeholder-value"
+                }
               >
-                Select User
-              </div>
+                {formData.category || "\u00a0"}
+              </span>
 
-              {filteredUsers.length === 0 ? (
-                <div className="dropdown-empty">No users found</div>
-              ) : (
-                filteredUsers.map((user) => (
-                  <div
-                    key={user.id}
-                    className="dropdown-item"
-                    onClick={() => handleSelectUser(user.username)}
-                  >
-                    {user.username}
-                  </div>
-                ))
-              )}
+              <span className="select-arrow">▼</span>
             </div>
-          )}
-        </div>
 
-        <div className="floating-field">
-          <label>Date</label>
+            {showCategorySearch && (
+              <div
+                className="search-dropdown"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="floating-field">
+                  <label>Search Category</label>
 
-          <input
-            type="date"
-            name="date"
-            value={formData.date}
-            onChange={handleChange}
-          />
-        </div>
+                  <input
+                    type="text"
+                    className="dropdown-search-input"
+                    value={categorySearch}
+                    onChange={(e) => setCategorySearch(e.target.value)}
+                    autoFocus
+                  />
+                </div>
 
-        <div className="floating-field search-field">
-          <label>Category</label>
+                <div
+                  className="dropdown-item select-option"
+                  onClick={() => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      category: "",
+                    }));
 
-          <div
-            className="select-search-box"
-            onClick={() => {
-              setShowCategorySearch((prev) => !prev);
-              setShowUserSearch(false);
-            }}
-          >
-            <span
-              className={
-                formData.category ? "selected-value" : "placeholder-value"
-              }
-            >
-              {formData.category || "Select Category"}
-            </span>
+                    setCategorySearch("");
+                    setShowCategorySearch(false);
+                  }}
+                >
+                  Select Category
+                </div>
 
-            <span className="select-arrow">▼</span>
+                {filteredCategoryGroups.length === 0 ? (
+                  <div className="dropdown-empty">No categories found</div>
+                ) : (
+                  filteredCategoryGroups.map((section) => (
+                    <div key={section.group || "direct"}>
+                      {section.group && (
+                        <div className="dropdown-group-label">
+                          {section.group}
+                        </div>
+                      )}
+
+                      {section.items.map((categoryName) => (
+                        <div
+                          key={categoryName}
+                          className="dropdown-item"
+                          onClick={() => handleSelectCategory(categoryName)}
+                        >
+                          {categoryName}
+                        </div>
+                      ))}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
 
-          {showCategorySearch && (
-            <div
-              className="search-dropdown"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <input
-                type="text"
-                className="dropdown-search-input"
-                placeholder="Search Category..."
-                value={categorySearch}
-                onChange={(e) => setCategorySearch(e.target.value)}
-                autoFocus
-              />
+          <div className="floating-field">
+            <label>Particular</label>
 
-              <div
-                className="dropdown-item select-option"
-                onClick={() => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    category: "",
-                  }));
+            <input
+              type="text"
+              name="particular"
+              value={formData.particular}
+              onChange={handleChange}
+              placeholder=" "
+            />
+          </div>
 
-                  setCategorySearch("");
-                  setShowCategorySearch(false);
-                }}
-              >
-                Select Category
-              </div>
-
-              {filteredCategoryGroups.length === 0 ? (
-                <div className="dropdown-empty">No categories found</div>
-              ) : (
-                filteredCategoryGroups.map((section) => (
-                  <div key={section.group || "direct"}>
-                    {section.group && (
-                      <div className="dropdown-group-label">
-                        {section.group}
-                      </div>
-                    )}
-
-                    {section.items.map((categoryName) => (
-                      <div
-                        key={categoryName}
-                        className="dropdown-item"
-                        onClick={() => handleSelectCategory(categoryName)}
-                      >
-                        {categoryName}
-                      </div>
-                    ))}
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="floating-field">
-          <label>Particular</label>
-
-          <input
-            type="text"
-            name="particular"
-            value={formData.particular}
-            onChange={handleChange}
-            placeholder=" "
-          />
-        </div>
-
-        <div className="amount-tax-row">
           <div className="floating-field">
             <label>Amount</label>
 
@@ -735,7 +885,9 @@ function AddIncome() {
               </div>
             )}
           </div>
+        </div>
 
+        <div className="amount-tax-row">
           <div className="floating-field">
             <label>Total</label>
 

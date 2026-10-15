@@ -213,6 +213,9 @@ export const apiDeleteAsset = (id) =>
 export const apiAddAssetCategory = (name) =>
   request("/api/assets/assets-category", { method: "POST", body: { name } });
 
+export const apiGetAssetCategories = () =>
+  request("/api/assets/assets-category");
+
 export const apiGetLiabilities = () => request("/api/liabilities");
 
 export const apiAddLiability = (liability) =>

@@ -77,8 +77,6 @@ function App() {
       <ConditionalNavigation />
 
       <Routes>
-        {/* PUBLIC — login असेल तर dashboard वर */}
-
         <Route
           path="/login"
           element={

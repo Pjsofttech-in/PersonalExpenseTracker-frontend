@@ -155,7 +155,9 @@ const mapExpenseToFrontend = (dto) => {
 export const loadTransactionsFromBackend = async () => {
   const expenses = await apiGetExpenses();
 
-  return (expenses || []).map(mapExpenseToFrontend);
+  return (expenses || [])
+    .filter((dto) => dto.sourceType !== "ASSET_PURCHASE")
+    .map(mapExpenseToFrontend);
 };
 
 export const loadCategoriesFromBackend = async () => {

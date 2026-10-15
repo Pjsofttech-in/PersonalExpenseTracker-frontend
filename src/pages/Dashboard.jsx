@@ -153,29 +153,37 @@ function Dashboard() {
     <div className="dashboard">
       <div className="dashboard-content">
         <div className="fin-pills dashboard-al-pills">
-          {alPillStats.map((pill) => (
+          <span className="fin-list-total">
+            Assets Total: {formatAmount(assetsTotal)}
+          </span>
+
+          {alPillStats.slice(0, 3).map((pill) => (
             <div className="fin-pill" key={pill.id}>
               <span className="fin-pill-label">{pill.label}</span>
 
               <span className="fin-pill-amounts">
-                <span className="pill-paid">
-                  Paid: {formatAmount(pill.paid)}
-                </span>
-
-                <span className="pill-unpaid">
-                  Unpaid: {formatAmount(pill.unpaid)}
+                <span className="pill-total">
+                  Total: {formatAmount(pill.amount)}
                 </span>
               </span>
             </div>
           ))}
 
           <span className="fin-list-total">
-            Assets Total: {formatAmount(assetsTotal)}
-          </span>
-
-          <span className="fin-list-total">
             Liabilities Total: {formatAmount(liabilitiesTotal)}
           </span>
+
+          {alPillStats.slice(3).map((pill) => (
+            <div className="fin-pill" key={pill.id}>
+              <span className="fin-pill-label">{pill.label}</span>
+
+              <span className="fin-pill-amounts">
+                <span className="pill-total">
+                  Total: {formatAmount(pill.amount)}
+                </span>
+              </span>
+            </div>
+          ))}
         </div>
 
         <BalanceCard />

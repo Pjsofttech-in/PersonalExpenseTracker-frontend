@@ -43,7 +43,7 @@ function List() {
 
   const [currentPage, setCurrentPage] = useState(1);
 
-  const rowsPerPage = 10;
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // Installment popup
   const [installmentItem, setInstallmentItem] = useState(null);
@@ -107,6 +107,8 @@ function List() {
       ...prev,
       [name]: value,
     }));
+
+    // FILTER बदललं की पहिल्या page वर परत
 
     setCurrentPage(1);
   };
@@ -271,6 +273,9 @@ function List() {
 
   const getAmount = (item) => Number(item.total || item.amount || 0);
 
+  // FIX: Payment Status "Complete" असेल तर पूर्ण amount paid आहे
+  // (आधी Complete transaction साठीही Paid ₹0 दिसत होता)
+
   const getPaid = (item) => {
     if (item.paymentStatus === "Complete") {
       return getAmount(item);
@@ -297,6 +302,23 @@ function List() {
   // =========================
 
   const getFuturePending = (item) => {
+    /* Installment entry — फक्त future due-dated
+       unpaid installments ची बेरीज (उदा. पुढील EMI हप्ते) */
+    const installments = item.installments || [];
+
+    if (installments.length > 0) {
+      const todayStr = new Date().toISOString().split("T")[0];
+
+      return installments.reduce(
+        (sum, inst) =>
+          inst.status === "Completed" ||
+          String(inst.dueDate || "").slice(0, 10) <= todayStr
+            ? sum
+            : sum + Number(inst.amount || 0),
+        0,
+      );
+    }
+
     const transactionDate = getTransactionDate(item);
 
     if (!transactionDate) return 0;
@@ -459,6 +481,9 @@ function List() {
     doc.setDrawColor(200);
     doc.line(20, 26, 190, 26);
 
+    // FIX: jsPDF default fonts "₹" support करत नाहीत (garbage print होत),
+    // म्हणून PDF मध्ये "Rs." वापरला आहे
+
     const fields = [
       ["Date", item.date || "-"],
       ["Transaction ID", item.transactionId || "-"],
@@ -527,6 +552,8 @@ function List() {
 
       setTransactions(transactions.filter((item) => item.id !== id));
 
+      // FIX: Dashboard / Recent Transactions लगेच sync व्हावेत म्हणून
+
       window.dispatchEvent(new Event("transactionUpdated"));
     } catch (error) {
       alert(error.message || "Could not delete. Is the backend running?");
@@ -534,12 +561,13 @@ function List() {
   };
 
   // =========================
-  // EDIT
+  // EDIT (user name वर double click ने पण)
   // =========================
 
   const handleEdit = (item) => {
     localStorage.setItem("editTransaction", JSON.stringify(item));
 
+    // TopNavigation मधल्या route प्रमाणे - कोणत्याही router ला चालतो
     navigate("/income/add");
   };
 
@@ -585,6 +613,12 @@ function List() {
   const handleAddInstallment = (e) => {
     e.preventDefault();
 
+    /* BACKEND MODE: installments transaction तयार
+       करतानाच schedule मध्ये set होतात (backend ला
+       add-installment endpoint नाही). नवीन
+       installment हवा असेल तर transaction edit
+       करा. */
+
     alert(
       "Installments are set when the transaction is created (2 auto installments). To change them, edit the transaction.",
     );
@@ -625,12 +659,18 @@ function List() {
     if (targetInst.status === "Completed") return;
 
     try {
+      /* BACKEND PAYMENT — installment वर amount
+         जातो, backend status update करतो */
+
       await payInstallmentOnBackend(
         instId,
         targetInst.amount,
         todayStr,
         payTxnId.trim(),
       );
+
+      /* Backend वरून पुन्हा सगळं load (paid/pending
+         + status backend compute करतो) */
 
       const refreshed = await loadTransactionsFromBackend();
 
@@ -665,11 +705,12 @@ function List() {
       <div className="filter-section">
         {/* SEARCH — Type च्या आधी */}
 
-        <div className="list-search-section">
+        <div className="list-search-section floating-field">
+          <label>Search</label>
           <input
             type="text"
             value={filters.search}
-            placeholder="Search..."
+            placeholder=" "
             onChange={(e) => handleFilterChange("search", e.target.value)}
           />
 
@@ -680,88 +721,145 @@ function List() {
           )}
         </div>
 
-        <select
-          value={filters.type}
-          onChange={(e) => handleFilterChange("type", e.target.value)}
+        <div
+          className={
+            "floating-field" + (filters.type !== "All" ? " has-value" : "")
+          }
         >
-          <option value="All">All</option>
-          <option value="Income">Income</option>
-          <option value="Expense">Expense</option>
-          <option value="Asset">Asset</option>
-          <option value="Liability">Liability</option>
-        </select>
+          <label>Type</label>
+          <select
+            value={filters.type}
+            onChange={(e) => handleFilterChange("type", e.target.value)}
+          >
+            <option value="All"></option>
+            <option value="Income">Income</option>
+            <option value="Expense">Expense</option>
+            <option value="Asset">Asset</option>
+            <option value="Liability">Liability</option>
+          </select>
+        </div>
 
-        <select
-          value={filters.timeframe}
-          onChange={(e) => handleFilterChange("timeframe", e.target.value)}
+        <div
+          className={
+            "floating-field" + (filters.timeframe !== "All" ? " has-value" : "")
+          }
         >
-          <option value="" disabled hidden>
-            Timeframe
-          </option>
-          <option value="All">All</option>
-          <option value="Today">Today</option>
-          <option value="This Week">This Week</option>
-          <option value="This Month">This Month</option>
-          <option value="Year">Year</option>
-          <option value="Custom">Custom</option>
-        </select>
-
-        <select
-          value={filters.billType}
-          onChange={(e) => handleFilterChange("billType", e.target.value)}
-        >
-          <option value="All">Bill Type</option>
-          <option value="Receipt">Receipt</option>
-          <option value="Invoice">Invoice</option>
-        </select>
-
-        <select
-          value={filters.category}
-          onChange={(e) => handleFilterChange("category", e.target.value)}
-        >
-          <option value="All">Category</option>
-
-          {categories.map((category) => (
-            <option key={category.id} value={category.name}>
-              {category.name}
+          <label>Timeframe</label>
+          <select
+            value={filters.timeframe}
+            onChange={(e) => handleFilterChange("timeframe", e.target.value)}
+          >
+            <option value="" disabled hidden>
+              Timeframe
             </option>
-          ))}
-        </select>
+            <option value="All"></option>
+            <option value="Today">Today</option>
+            <option value="This Week">This Week</option>
+            <option value="This Month">This Month</option>
+            <option value="Year">Year</option>
+            <option value="Custom">Custom</option>
+          </select>
+        </div>
 
-        <select
-          value={filters.paymentMethod}
-          onChange={(e) => handleFilterChange("paymentMethod", e.target.value)}
+        <div
+          className={
+            "floating-field" + (filters.billType !== "All" ? " has-value" : "")
+          }
         >
-          <option value="All">Payment Method</option>
-          <option value="Cash">Cash</option>
-          <option value="UPI">UPI</option>
-          <option value="Bank">Bank</option>
-          <option value="Card">Card</option>
-          <option value="Cheque">Cheque</option>
-        </select>
+          <label>Bill Type</label>
+          <select
+            value={filters.billType}
+            onChange={(e) => handleFilterChange("billType", e.target.value)}
+          >
+            <option value="All"></option>
+            <option value="Receipt">Receipt</option>
+            <option value="Invoice">Invoice</option>
+          </select>
+        </div>
 
-        <select
-          value={filters.paymentStatus}
-          onChange={(e) => handleFilterChange("paymentStatus", e.target.value)}
+        <div
+          className={
+            "floating-field" + (filters.category !== "All" ? " has-value" : "")
+          }
         >
-          <option value="All">Payment Status</option>
-          <option value="Complete">Complete</option>
-          <option value="Installment">Installment</option>
-          <option value="Income Refund">Income Refund</option>
-        </select>
+          <label>Category</label>
+          <select
+            value={filters.category}
+            onChange={(e) => handleFilterChange("category", e.target.value)}
+          >
+            <option value="All"></option>
 
-        <select
-          value={filters.user}
-          onChange={(e) => handleFilterChange("user", e.target.value)}
+            {categories.map((category) => (
+              <option key={category.id} value={category.name}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div
+          className={
+            "floating-field" +
+            (filters.paymentMethod !== "All" ? " has-value" : "")
+          }
         >
-          <option value="All">User</option>
+          <label>Payment Method</label>
+          <select
+            value={filters.paymentMethod}
+            onChange={(e) =>
+              handleFilterChange("paymentMethod", e.target.value)
+            }
+          >
+            <option value="All"></option>
+            <option value="Cash">Cash</option>
+            <option value="UPI">UPI</option>
+            <option value="Bank">Bank</option>
+            <option value="Card">Card</option>
+            <option value="Cheque">Cheque</option>
+          </select>
+        </div>
 
-          {users.map((user) => (
-            <option key={user.id} value={user.username}>
-              {user.username}
-            </option>
-          ))}
-        </select>
+        <div
+          className={
+            "floating-field" +
+            (filters.paymentStatus !== "All" ? " has-value" : "")
+          }
+        >
+          <label>Payment Status</label>
+          <select
+            value={filters.paymentStatus}
+            onChange={(e) =>
+              handleFilterChange("paymentStatus", e.target.value)
+            }
+          >
+            <option value="All"></option>
+            <option value="Complete">Complete</option>
+            <option value="Installment">Installment</option>
+            <option value="Income Refund">Income Refund</option>
+          </select>
+        </div>
+
+        {/* USER — परत add, Search लहान करून जागा */}
+
+        <div
+          className={
+            "floating-field" + (filters.user !== "All" ? " has-value" : "")
+          }
+        >
+          <label>User</label>
+          <select
+            value={filters.user}
+            onChange={(e) => handleFilterChange("user", e.target.value)}
+          >
+            <option value="All"></option>
+
+            {users.map((user) => (
+              <option key={user.id} value={user.username}>
+                {user.username}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* =========================
@@ -799,7 +897,7 @@ function List() {
       ========================= */}
 
       {/* =========================
-          LIST BUTTONS + सगळे COLORED TOTALS 
+          LIST BUTTONS + सगळे COLORED TOTALS (एकच line)
       ========================= */}
 
       <div className="list-buttons">
@@ -840,7 +938,7 @@ function List() {
           {Math.abs(profitLoss).toLocaleString("en-IN")}
         </button>
 
-        {/* EXPENSE*/}
+        {/* EXPENSE — Income च्या आधी */}
 
         <button className="summary expense">
           Expense: ₹{totalExpense.toLocaleString("en-IN")}
@@ -864,8 +962,8 @@ function List() {
             <span>Category</span>
             <span>Particular</span>
             <span>Amount</span>
-            <span>GST Amt</span>
-            <span>TDS Amt</span>
+            <span>GST</span>
+            <span>TDS</span>
             <span>Total</span>
             <span>Paid</span>
             <span>Pending</span>
@@ -887,7 +985,7 @@ function List() {
 
                 <span>{item.date || "-"}</span>
 
-                {/* USER  */}
+                {/* USER - double click ने edit */}
 
                 <span
                   className="user-link"
@@ -930,7 +1028,11 @@ function List() {
                 <span>{item.billType || "-"}</span>
 
                 <span>
-                  {item.paymentStatus === "Installment" ? (
+                  {/* Installments असलेल्या entry साठी button कायम
+                      राहतो — 1 हप्ता भरल्यावर status "Partial"
+                      होतो, तरीही पुढील हप्ता भरता येतो */}
+                  {(item.installments || []).length > 0 &&
+                  item.paymentStatus !== "Complete" ? (
                     <button
                       type="button"
                       className="status-installment"
@@ -1004,48 +1106,79 @@ function List() {
           PAGINATION — 25 rows per page
       ========================= */}
 
-      {totalRows > rowsPerPage && (
+      {/* =========================
+          PAGINATION — ERP style
+          (1-25 of 81 items  ‹ 1 2 3 ›  25 / page)
+      ========================= */}
+
+      {totalRows > 0 && (
         <div className="pagination">
-          <button
-            className="page-btn"
-            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-            disabled={safePage === 1}
-          >
-            ◀ Prev
-          </button>
-
-          {Array.from({ length: totalPages }, (_, i) => i + 1)
-            .filter(
-              (n) => n === 1 || n === totalPages || Math.abs(n - safePage) <= 2,
-            )
-            .map((n, idx, arr) => (
-              <span key={n} className="page-btn-wrap">
-                {idx > 0 && n - arr[idx - 1] > 1 && (
-                  <span className="page-dots">…</span>
-                )}
-
-                <button
-                  className={
-                    n === safePage ? "page-btn active-page" : "page-btn"
-                  }
-                  onClick={() => setCurrentPage(n)}
-                >
-                  {n}
-                </button>
-              </span>
-            ))}
-
-          <button
-            className="page-btn"
-            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-            disabled={safePage === totalPages}
-          >
-            Next ▶
-          </button>
-
-          <span className="page-info">
-            Page {safePage} / {totalPages} &nbsp;|&nbsp; {totalRows} records
+          <span className="page-count">
+            {startIndex + 1}-{Math.min(startIndex + rowsPerPage, totalRows)} of{" "}
+            {totalRows} items
           </span>
+
+          {totalPages > 1 && (
+            <div className="page-btns">
+              <button
+                className="page-btn"
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                disabled={safePage === 1}
+                title="Previous page"
+              >
+                ‹
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(
+                  (n) =>
+                    n === 1 || n === totalPages || Math.abs(n - safePage) <= 2,
+                )
+                .map((n, idx, arr) => (
+                  <span key={n} className="page-btn-wrap">
+                    {idx > 0 && n - arr[idx - 1] > 1 && (
+                      <span className="page-dots">…</span>
+                    )}
+
+                    <button
+                      className={
+                        n === safePage ? "page-btn active-page" : "page-btn"
+                      }
+                      onClick={() => setCurrentPage(n)}
+                    >
+                      {n}
+                    </button>
+                  </span>
+                ))}
+
+              <button
+                className="page-btn"
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(p + 1, totalPages))
+                }
+                disabled={safePage === totalPages}
+                title="Next page"
+              >
+                ›
+              </button>
+            </div>
+          )}
+
+          <label className="page-size">
+            <select
+              value={rowsPerPage}
+              onChange={(e) => {
+                setRowsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              title="Rows per page"
+            >
+              <option value={10}>10 / page</option>
+              <option value={25}>25 / page</option>
+              <option value={50}>50 / page</option>
+              <option value={100}>100 / page</option>
+            </select>
+          </label>
         </div>
       )}
 

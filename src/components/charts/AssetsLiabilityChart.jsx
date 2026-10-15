@@ -19,6 +19,8 @@ import { loadTransactionsFromBackend } from "../../utils/backendData";
 
 import "../../css/Charts.css";
 
+import { fmtAxis } from "../../utils/format";
+
 const PIE_COLORS = {
   Investment: "#16A34A",
   Banks: "#0EA5E9",
@@ -87,6 +89,7 @@ const LIABILITY_GROUPS = [
   },
 ];
 
+// Y-axis compact format: ₹1k, ₹2.5L, ₹16Cr (tooltip मध्ये exact amount येतच राहतो)
 function AssetsLiabilityChart() {
   const [chartType, setChartType] = useState("BAR");
 
@@ -497,10 +500,7 @@ function AssetsLiabilityChart() {
 
                 <XAxis dataKey={xKey} tick={{ fontSize: 11 }} />
 
-                <YAxis
-                  tick={{ fontSize: 11 }}
-                  tickFormatter={(value) => `₹${value}`}
-                />
+                <YAxis tick={{ fontSize: 11 }} tickFormatter={fmtAxis} />
 
                 <Tooltip
                   formatter={(value) =>
@@ -560,10 +560,7 @@ function AssetsLiabilityChart() {
 
                 <XAxis dataKey={xKey} tick={{ fontSize: 11 }} />
 
-                <YAxis
-                  tick={{ fontSize: 11 }}
-                  tickFormatter={(value) => `₹${value}`}
-                />
+                <YAxis tick={{ fontSize: 11 }} tickFormatter={fmtAxis} />
 
                 <Tooltip
                   formatter={(value) =>

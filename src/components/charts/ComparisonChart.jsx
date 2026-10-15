@@ -15,9 +15,15 @@ import {
 
 import "../../css/Charts.css";
 
+import { fmtAxis } from "../../utils/format";
+
+// Y-axis compact format: ₹1k, ₹2.5L, ₹16Cr (tooltip मध्ये exact amount येतच राहतो)
 function ComparisonChart({ transactions = [] }) {
   const [chartType, setChartType] = useState("PIE");
   const [typeFilter, setTypeFilter] = useState("All");
+
+  // TIMEFRAME — chart मधला स्वतःचा dropdown
+  // ("" म्हणजे box वर "Timeframe" नाव दिसतं, Monthly प्रमाणे चालतं)
 
   const [timeframe, setTimeframe] = useState("");
 
@@ -342,10 +348,7 @@ function ComparisonChart({ transactions = [] }) {
 
               <XAxis dataKey={xKey} tick={{ fontSize: 11 }} />
 
-              <YAxis
-                tick={{ fontSize: 11 }}
-                tickFormatter={(value) => `₹${value}`}
-              />
+              <YAxis tick={{ fontSize: 11 }} tickFormatter={fmtAxis} />
 
               <Tooltip
                 formatter={(value) =>
@@ -405,10 +408,7 @@ function ComparisonChart({ transactions = [] }) {
 
               <XAxis dataKey={xKey} tick={{ fontSize: 11 }} />
 
-              <YAxis
-                tick={{ fontSize: 11 }}
-                tickFormatter={(value) => `₹${value}`}
-              />
+              <YAxis tick={{ fontSize: 11 }} tickFormatter={fmtAxis} />
 
               <Tooltip
                 formatter={(value) =>

@@ -1,4 +1,8 @@
 /* =========================================================
+   LIABILITIES PAGE — PAGE SPECIFIC STYLES
+   ========================================================= */
+
+/* =========================================================
    LIABILITY TABLE GRID
    ========================================================= */
 
@@ -431,7 +435,8 @@
 
   display: grid;
 
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* 4 pills + Total = 5 items — सगळे एकाच ओळीत */
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 
   gap: 10px;
 
@@ -450,7 +455,7 @@
 
   box-sizing: border-box;
 
-  padding: 10px 16px;
+  padding: 10px 12px;
 
   font-size: 14px;
 

@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
+
 .add-income-page {
   width: 100%;
   min-height: calc(100vh - 120px);
@@ -40,18 +42,16 @@
   width: 100%;
   max-width: none;
   box-sizing: border-box;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 14px 12px 16px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  padding: 8px 10px 10px;
   display: grid;
-  grid-template-columns:
-    minmax(180px, 1fr)
-    minmax(180px, 1fr)
-    minmax(180px, 1fr)
-    minmax(180px, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 13px 9px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  font-family: "Poppins", "Segoe UI", system-ui, sans-serif;
+  color: #3f4c63;
 }
 
 .floating-field {
@@ -65,9 +65,9 @@
 .floating-field label {
   position: absolute;
   top: 50%;
-  left: 12px;
+  left: 10px;
   transform: translateY(-50%);
-  font-size: 13px;
+  font-size: 11px;
   color: #8a97a8;
   margin: 0;
   font-weight: 500;
@@ -85,9 +85,9 @@
 .floating-field:has(select) label,
 .floating-field:has(input[type="date"]) label,
 .floating-field:has(input[readonly]) label,
-.floating-field:has(.select-search-box) label {
+.floating-field:has(.select-search-box .selected-value) label {
   top: 0;
-  font-size: 11px;
+  font-size: 9px;
   color: #555;
 }
 
@@ -109,21 +109,49 @@
 .floating-field input,
 .floating-field select {
   width: 100%;
-  height: 42px;
+  height: 36px;
   box-sizing: border-box;
-  border: 1px solid #c8c8c8;
-  border-radius: 6px;
-  background: #fff;
-  padding: 0 12px;
+  border: 1px solid #d9e0ea;
+  border-radius: 5px;
   outline: none;
-  font-family: "Poppins", sans-serif;
-  font-size: 13px;
-  color: #333;
+  padding: 0 10px;
+  font-family: "Poppins", "Segoe UI", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: #3f4c63;
+  background: #ffffff;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease,
+    border-radius 0.18s ease;
 }
 
 .floating-field input:focus,
 .floating-field select:focus {
   border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.12);
+}
+
+.floating-field:focus-within input,
+.floating-field:focus-within select,
+.floating-field:focus-within .select-search-box,
+.small-field:focus-within input {
+  border-color: #1976d2;
+}
+
+.floating-field:focus-within label,
+.small-field:focus-within label {
+  color: #ffffff;
+  background: #1976d2;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-weight: 500;
+  z-index: 2;
+}
+
+.floating-field:focus-within .select-arrow {
+  color: #1976d2;
 }
 
 .search-field {
@@ -132,27 +160,32 @@
 
 .select-search-box {
   width: 100%;
-  height: 42px;
+  height: 36px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 12px;
-  background: #fff;
-  border: 1px solid #c8c8c8;
-  border-radius: 6px;
+  padding: 0 10px;
+  background: #ffffff;
+  border: 1px solid #d9e0ea;
+  border-radius: 5px;
   cursor: pointer;
-  font-family: "Poppins", sans-serif;
-  font-size: 13px;
-  transition: 0.2s;
+  font-family: "Poppins", "Segoe UI", system-ui, sans-serif;
+  font-size: 11px;
+  color: #3f4c63;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
 }
 
-.select-search-box:hover {
+.search-field:focus-within .select-search-box {
   border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.12);
 }
 
 .selected-value {
-  color: #333;
+  color: #3f4c63;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -170,7 +203,7 @@
 
 .search-dropdown {
   position: absolute;
-  top: 68px;
+  top: calc(100% + 5px);
   left: 0;
   width: 100%;
   max-height: 225px;
@@ -183,18 +216,43 @@
   padding: 5px 0;
 }
 
-.dropdown-search-input {
-  width: calc(100% - 16px);
-  height: 36px;
+/* dropdown search input — Amount field सारखी floating-field */
+
+.search-dropdown .floating-field {
   margin: 5px 8px 7px;
+}
+
+/* Amount field सारखाच focus effect — dropdown search वर */
+
+.search-dropdown .floating-field:focus-within label {
+  color: #ffffff;
+  background: #1976d2;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+.search-dropdown .floating-field:focus-within .dropdown-search-input {
+  border-color: #1976d2;
+}
+
+.search-dropdown .floating-field .dropdown-search-input {
+  width: 100%;
+  height: 36px;
+  margin: 0;
   box-sizing: border-box;
   padding: 0 10px;
-  border: 1px solid #c8c8c8;
+  border: 1px solid #d9e0ea;
   border-radius: 5px;
   outline: none;
-  font-family: "Poppins", sans-serif;
-  font-size: 12px;
-  color: #333;
+  font-family: "Poppins", "Segoe UI", system-ui, sans-serif;
+  font-size: 11px;
+  color: #3f4c63;
+  background: #ffffff;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
 }
 
 .dropdown-search-input:focus {
@@ -202,8 +260,8 @@
 }
 
 .dropdown-item {
-  padding: 9px 12px;
-  font-size: 13px;
+  padding: 7px 10px;
+  font-size: 11px;
   color: #333;
   cursor: pointer;
   border-bottom: 1px solid #f1f1f1;
@@ -246,13 +304,13 @@
 }
 
 .check-label {
-  height: 42px;
+  height: 36px;
   display: flex;
   align-items: center;
   gap: 6px;
   white-space: nowrap;
-  font-size: 13px;
-  color: #333;
+  font-size: 11px;
+  color: #3f4c63;
 }
 
 .check-label input {
@@ -272,9 +330,9 @@
 .small-field label {
   position: absolute;
   top: 50%;
-  left: 9px;
+  left: 8px;
   transform: translateY(-50%);
-  font-size: 12px;
+  font-size: 10px;
   color: #8a97a8;
   padding: 0 4px;
   background: #fff;
@@ -298,13 +356,23 @@
 
 .small-field input {
   width: 100%;
-  height: 42px;
+  height: 36px;
   box-sizing: border-box;
-  padding: 0 9px;
-  border: 1px solid #c8c8c8;
-  border-radius: 6px;
+  padding: 0 8px;
+  border: 1px solid #d9e0ea;
+  border-radius: 5px;
   outline: none;
-  font-size: 13px;
+  font-size: 11px;
+  color: #3f4c63;
+  background: #ffffff;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.small-field input:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.12);
 }
 
 .gst-number {
@@ -317,20 +385,25 @@
 
 .notes-field textarea {
   width: 100%;
-  min-height: 70px;
+  min-height: 60px;
   box-sizing: border-box;
-  padding: 10px 12px;
-  border: 1px solid #c8c8c8;
-  border-radius: 6px;
+  padding: 8px 10px;
+  border: 1px solid #d9e0ea;
+  border-radius: 5px;
   resize: vertical;
   outline: none;
-  font-family: "Poppins", sans-serif;
-  font-size: 13px;
-  color: #333;
+  font-family: "Poppins", "Segoe UI", system-ui, sans-serif;
+  font-size: 11px;
+  color: #3f4c63;
+  background: #ffffff;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .notes-field textarea:focus {
   border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.12);
 }
 
 .income-buttons {
@@ -342,12 +415,13 @@
 }
 
 .cancel-btn {
-  height: 38px;
-  padding: 0 20px;
+  height: 34px;
+  padding: 0 18px;
   border: none;
   background: transparent;
   color: #1976d2;
-  font-size: 13px;
+  font-size: 11px;
+  font-weight: 500;
   cursor: pointer;
 }
 
@@ -356,16 +430,17 @@
 }
 
 .save-btn {
-  height: 38px;
-  padding: 0 22px;
+  height: 34px;
+  padding: 0 20px;
   border: none;
   border-radius: 5px;
   background: #1976d2;
   color: white;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  transition: background 0.18s ease;
 }
 
 .save-btn:hover {
@@ -402,25 +477,23 @@
 }
 
 .amount-tax-row > .floating-field:nth-child(1) {
-  grid-column: 3;
+  grid-column: 1;
 }
 
 .amount-tax-row > .tax-section:nth-child(2) {
-  grid-column: 4;
+  grid-column: 2;
   flex-wrap: wrap;
 }
 
 .amount-tax-row > .tax-section:nth-child(3) {
-  grid-column: 4;
+  grid-column: 3;
 }
 
 .amount-tax-row > .floating-field:nth-child(4) {
-  grid-row: 3;
   grid-column: 1;
 }
 
 .amount-tax-row > .floating-field:nth-child(5) {
-  grid-row: 3;
   grid-column: 2;
 }
 
@@ -464,13 +537,13 @@
 
 @media (max-width: 1100px) {
   .income-expense-form {
-    grid-template-columns: repeat(3, minmax(160px, 1fr));
+    grid-template-columns: repeat(2, minmax(150px, 1fr));
   }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 700px) {
   .income-expense-form {
-    grid-template-columns: repeat(2, minmax(160px, 1fr));
+    grid-template-columns: 1fr;
   }
 }
 
@@ -497,5 +570,204 @@
 
   .income-buttons {
     grid-column: auto;
+  }
+}
+
+.floating-field:focus-within label,
+.search-dropdown .floating-field:focus-within label {
+  color: #ffffff !important;
+}
+
+/* ═══════════════════════════════════════════
+   FORM ROWS — दोन खास ओळी:
+   ओळ 1: Type | Assets/Liabilities | User | Date
+   ओळ 2: Category | Particular | Amount | GST | TDS
+   (बाकी fields खाली 3-col grid मध्ये वाहतात)
+═══════════════════════════════════════════ */
+
+.form-row {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  min-width: 0;
+}
+
+.form-row > * {
+  min-width: 0;
+}
+
+/* ओळ 1 — 4 समान भाग (Type + A/L मिळून 2 भाग) */
+.form-row-4 > .floating-field {
+  flex: 1 1 0;
+  min-width: 130px;
+}
+
+.form-row-4 > .type-row {
+  flex: 2 1 0;
+  min-width: 240px;
+  gap: 9px;
+}
+
+/* ओळ 2 — 5 समान भाग */
+.form-row-5 > .floating-field {
+  flex: 1 1 0;
+  min-width: 100px;
+}
+
+.form-row-5 > .tax-section {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 0;
+}
+
+@media (max-width: 550px) {
+  .form-row > * {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .form-row > .type-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .form-row-5 > .tax-section {
+    flex: 1 1 100%;
+  }
+}
+
+/* Requested Add Income form layout */
+.income-expense-form > .form-row.form-row-4 {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 13px 9px;
+  width: 100%;
+  min-width: 0;
+}
+
+.income-expense-form > .form-row.form-row-5 {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 13px 9px;
+  width: 100%;
+  min-width: 0;
+}
+
+.income-expense-form > .form-row.form-row-4 > *,
+.income-expense-form > .form-row.form-row-5 > * {
+  min-width: 0;
+}
+
+.income-expense-form > .form-row.form-row-5 > .tax-section {
+  width: 100%;
+  min-width: 0;
+}
+
+.income-expense-form > .amount-tax-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 13px 9px;
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .income-expense-form > .form-row.form-row-4,
+  .income-expense-form > .form-row.form-row-5,
+  .income-expense-form > .amount-tax-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 550px) {
+  .income-expense-form > .form-row.form-row-4,
+  .income-expense-form > .form-row.form-row-5,
+  .income-expense-form > .amount-tax-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   GST व TDS — जवळ जवळ (compact):
+   - idle: फक्त checkbox एवढं रुंद, शेजारी शेजारी
+   - GST click केल्यावर % / GST Number उगवतात
+     आणि TDS नंतर side ला सरकतं (slide)
+   - Category / Particular / Amount समान राहतात
+═══════════════════════════════════════════ */
+
+.income-expense-form > .form-row.form-row-5 {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto auto;
+}
+
+.income-expense-form > .form-row.form-row-5 > .tax-section {
+  width: auto;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .income-expense-form > .form-row.form-row-5 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .income-expense-form > .form-row.form-row-5 > .tax-section {
+    width: 100%;
+  }
+}
+
+@media (max-width: 550px) {
+  .income-expense-form > .form-row.form-row-5 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   ओळ 2 = ओळ 1 सारखीच रुंदी + GST/TDS Date खाली:
+   - Category / Particular / Amount = Type सारखेच
+     समान रुंदी (calc ओळ 1 च्या 4-column grid शी जुळतं)
+   - GST + TDS compact, शेजारी शेजारी, Date च्या खाली
+   - GST click → % / GST Number उगवतात आणि TDS
+     नंतर side ला सरकतं (slide)
+   - दोन्ही on → दोघं Date खालीच्या zone मध्येच बसतात
+═══════════════════════════════════════════ */
+
+.income-expense-form > .form-row.form-row-5 {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 9px;
+}
+
+.income-expense-form > .form-row.form-row-5 > .floating-field {
+  flex: 0 0 calc((100% - 27px) / 4);
+  min-width: 0;
+}
+
+.income-expense-form > .form-row.form-row-5 > .tax-section {
+  flex: 0 1 auto;
+  width: auto;
+  min-width: min-content;
+}
+
+/* दोन्ही tax on असताना Date खालीच्या zone मध्ये बसण्यासाठी */
+.income-expense-form > .form-row.form-row-5 > .tax-section .small-field {
+  min-width: 45px;
+}
+
+@media (max-width: 900px) {
+  .income-expense-form > .form-row.form-row-5 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .income-expense-form > .form-row.form-row-5 > .tax-section {
+    width: 100%;
+  }
+}
+
+@media (max-width: 550px) {
+  .income-expense-form > .form-row.form-row-5 {
+    grid-template-columns: 1fr;
   }
 }

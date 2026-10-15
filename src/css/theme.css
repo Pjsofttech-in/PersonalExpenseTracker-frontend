@@ -1,0 +1,883 @@
+.theme-toggle {
+  margin-left: auto;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.theme-toggle svg {
+  width: 19px;
+  height: 19px;
+}
+
+/* ═════════════════════════════════════════════════════
+   DARK MODE — body.dark असताना लागू
+═════════════════════════════════════════════════════ */
+
+body.dark {
+  background: #0f172a;
+  color: #e7eef9;
+}
+
+/* native dropdown options */
+body.dark option {
+  background: #131d32;
+  color: #e7eef9;
+}
+
+/* ─────────────────────────────────────
+   TOP NAVIGATION
+───────────────────────────────────── */
+
+body.dark .top-navigation {
+  background: #33518f;
+  border-bottom-color: #26334f;
+}
+
+/* ─────────────────────────────────────
+   DASHBOARD
+───────────────────────────────────── */
+
+body.dark .dashboard {
+  background: #0f172a;
+}
+
+body.dark .dashboard-timeframe-section {
+  background: #1a2439;
+  border-color: #314262;
+}
+
+body.dark .dashboard-timeframe-label span {
+  color: #d5deec;
+}
+
+body.dark .dashboard-timeframe-label small {
+  color: #8fa3c2;
+}
+
+body.dark .dashboard-timeframe-select {
+  background: #131d32;
+  border-color: #3a4d70;
+  color: #e7eef9;
+}
+
+/* ─────────────────────────────────────
+   DASHBOARD CARDS (Card.css)
+───────────────────────────────────── */
+
+body.dark .dashboard-card {
+  background: #1a2439;
+  border-color: #314262;
+}
+
+body.dark .card-top h4 {
+  color: #a9b8d0;
+}
+
+body.dark .card-row {
+  border-bottom-color: #26334f;
+}
+
+body.dark .card-row span {
+  color: #8294af;
+}
+
+body.dark .card-row strong {
+  color: #d5deec;
+}
+
+body.dark .card-row.total-row {
+  border-top-color: #314262;
+}
+
+body.dark .card-row.total-row span {
+  color: #a9b8d0;
+}
+
+body.dark .card-row.total-row strong {
+  color: #e7eef9;
+}
+
+/* ─────────────────────────────────────
+   CHARTS (recharts)
+───────────────────────────────────── */
+
+body.dark .chart-card,
+body.dark .expense-category-card {
+  background: #1a2439;
+  border-color: #314262;
+}
+
+body.dark .chart-card-header h3,
+body.dark .expense-category-header h3 {
+  color: #d5deec;
+}
+
+body.dark .chart-card-header p,
+body.dark .expense-category-header p {
+  color: #8fa3c2;
+}
+
+body.dark .chart-toggle-group {
+  background: #16213a;
+}
+
+body.dark .chart-toggle-group button {
+  color: #a9b8d0;
+}
+
+body.dark .chart-toggle-group button.active {
+  background: #26334f;
+  color: #7db3ff;
+}
+
+body.dark .chart-timeframe-select {
+  background: #131d32;
+  border-color: #3a4d70;
+  color: #cfd9e9;
+}
+
+body.dark .expense-empty p {
+  color: #8fa3c2;
+}
+
+body.dark .expense-empty span {
+  color: #8294af;
+}
+
+body.dark .recharts-cartesian-axis-tick text {
+  fill: #8fa3c2;
+}
+
+body.dark .recharts-cartesian-grid line {
+  stroke: #26334f;
+}
+
+body.dark .recharts-legend-item-text {
+  color: #a9b8d0 !important;
+}
+
+body.dark .recharts-default-tooltip {
+  background: #1a2439 !important;
+  border: 1px solid #314262 !important;
+}
+
+body.dark .recharts-tooltip-label {
+  color: #e7eef9;
+}
+
+/* ─────────────────────────────────────
+   RECENT TRANSACTIONS
+───────────────────────────────────── */
+
+body.dark .recent-transactions-card {
+  background: #1a2439;
+  border-color: #314262;
+}
+
+body.dark .recent-header h3 {
+  color: #d5deec;
+}
+
+body.dark .recent-header p {
+  color: #8fa3c2;
+}
+
+body.dark .recent-table thead th {
+  background: #22304c;
+  color: #a9b8d0;
+  border-bottom-color: #314262;
+}
+
+body.dark .recent-table tbody tr {
+  border-bottom-color: #26334f;
+}
+
+body.dark .recent-table tbody tr:hover {
+  background: #213252;
+}
+
+body.dark .recent-table tbody td {
+  color: #cfd9e9;
+}
+
+body.dark .recent-user {
+  color: #7db3ff;
+}
+
+body.dark .recent-status.completed {
+  background: #123524;
+  color: #4ade80;
+}
+
+body.dark .recent-status.pending {
+  background: #33270d;
+  color: #fbbf24;
+}
+
+body.dark .recent-edit {
+  background: #1c2d4d;
+  color: #7db3ff;
+}
+
+body.dark .recent-delete {
+  background: #3a1d24;
+  color: #f87171;
+}
+
+body.dark .recent-empty p {
+  color: #a9b8d0;
+}
+
+body.dark .recent-empty span {
+  color: #8294af;
+}
+
+/* ─────────────────────────────────────
+   NET WORTH
+───────────────────────────────────── */
+
+body.dark .nw-page-header h2 {
+  color: #e7eef9;
+}
+
+body.dark .nw-page-header p,
+body.dark .nw-loading,
+body.dark .nw-empty p,
+body.dark .nw-empty-text {
+  color: #8fa3c2;
+}
+
+body.dark .nw-card,
+body.dark .nw-card-block {
+  background: #1a2439;
+  border-color: #314262;
+}
+
+body.dark .nw-card-main {
+  background: #1c2d4d;
+  border-color: #2f4a75;
+}
+
+body.dark .nw-card-label,
+body.dark .nw-target-year,
+body.dark .nw-target-meta,
+body.dark .nw-info span {
+  color: #8fa3c2;
+}
+
+body.dark .nw-card-value,
+body.dark .nw-target-amount,
+body.dark .nw-info strong,
+body.dark .nw-block-title {
+  color: #e7eef9;
+}
+
+body.dark .nw-message {
+  background: #123524;
+  border-color: #1f5136;
+  color: #4ade80;
+}
+
+body.dark .nw-error {
+  background: #3a1d24;
+  border-color: #5f2a33;
+  color: #f87171;
+}
+
+body.dark .nw-field label {
+  color: #a9b8d0;
+}
+
+body.dark .nw-field input {
+  background: #131d32;
+  border-color: #3a4d70;
+  color: #e7eef9;
+}
+
+body.dark .nw-btn {
+  background: #1a2439;
+  border-color: #3a4d70;
+  color: #cfd9e9;
+}
+
+body.dark .nw-table th {
+  background: #22304c;
+  color: #a9b8d0;
+  border-bottom-color: #314262;
+}
+
+body.dark .nw-table td {
+  border-bottom-color: #26334f;
+  color: #cfd9e9;
+}
+
+body.dark .nw-progress {
+  background: #26334f;
+}
+
+body.dark .nw-info,
+body.dark .nw-assumptions {
+  background: #16213a;
+  border-color: #314262;
+  color: #8fa3c2;
+}
+
+/* ─────────────────────────────────────
+   ASSETS / LIABILITIES (.fin-*)
+───────────────────────────────────── */
+
+body.dark .fin-category-row,
+body.dark .fin-real-row {
+  background: #1a2439;
+  border-color: #314262;
+}
+
+body.dark .fin-category-name,
+body.dark .fin-real-name {
+  color: #d5deec;
+}
+
+body.dark .fin-real-head {
+  color: #8fa3c2;
+}
+
+body.dark .fin-real-type {
+  background: #22304c;
+  color: #a9b8d0;
+}
+
+body.dark .fin-real-value {
+  color: #7db3ff;
+}
+
+body.dark .fin-pill {
+  background: #1a2439;
+  border-color: #3a4d70;
+  color: #cfd9e9;
+}
+
+body.dark .assets-only .fin-pill.active {
+  background: #22304c;
+  color: #e7eef9;
+}
+
+body.dark .fin-add-btn {
+  background: #1c2d4d;
+  border-color: #2f4a75;
+  color: #7db3ff;
+}
+
+body.dark .fin-empty {
+  background: #16213a;
+  border-color: #3a4d70;
+  color: #8294af;
+}
+
+body.dark .fin-empty-state {
+  background: transparent;
+}
+
+body.dark .fin-empty-title {
+  color: #a9b8d0;
+}
+
+body.dark .fin-empty-text {
+  color: #8294af;
+}
+
+body.dark .fin-list-total {
+  background: #1c2d4d;
+  border-color: #2f4a75;
+  color: #7db3ff;
+}
+
+body.dark .pill-category-card {
+  background: #1a2439;
+  border-color: #314262;
+}
+
+body.dark .pill-category-name {
+  color: #d5deec;
+}
+
+body.dark .pill-category-percent {
+  color: #7db3ff;
+}
+
+body.dark .pill-category-amount {
+  color: #e7eef9;
+}
+
+body.dark .pill-total {
+  color: #cfd9e9;
+}
+
+body.dark .modal-error {
+  background: #3a1d24;
+  border-color: #5f2a33;
+  color: #f87171;
+}
+
+/* ─────────────────────────────────────
+   LIST PAGE
+───────────────────────────────────── */
+
+body.dark .list-page {
+  background: #0f172a;
+}
+
+body.dark .list-search-section input {
+  background: #131d32;
+  border-color: #3a4d70;
+  color: #e7eef9;
+}
+
+body.dark .list-search-section button {
+  background: #22304c;
+  color: #cfd9e9;
+}
+
+body.dark .list-search-section button:hover {
+  background: #2a3a5c;
+}
+
+body.dark .filter-section select,
+body.dark .custom-range input,
+body.dark .page-size select {
+  background: #131d32;
+  border-color: #3a4d70;
+  color: #e7eef9;
+}
+
+body.dark .filter-section .floating-field label {
+  background: #131d32;
+  color: #8294af;
+}
+
+body.dark .filter-section .floating-field.has-value label {
+  color: #a9b8d0;
+}
+
+body.dark .filter-section .floating-field select,
+body.dark .filter-section .floating-field input {
+  background: #131d32;
+  border-color: #3a4d70;
+  color: #e7eef9;
+}
+
+body.dark .custom-range label {
+  color: #a9b8d0;
+}
+
+body.dark .list-table-wrapper {
+  background: #1a2439;
+  border-color: #314262;
+}
+
+body.dark .list-table-header {
+  background: #35569c;
+}
+
+body.dark .list-table-row {
+  color: #cfd9e9;
+  border-bottom-color: #26334f;
+}
+
+body.dark .list-table-row:nth-child(even) {
+  background: #14251b;
+}
+
+body.dark .list-table-row:nth-child(odd) {
+  background: #1a2439;
+}
+
+body.dark .list-table-row:hover {
+  background: #213252;
+}
+
+body.dark .user-link {
+  color: #7db3ff;
+}
+
+body.dark .pending-value {
+  color: #fbbf24;
+}
+
+body.dark .future-pending-value {
+  color: #c4b5fd;
+}
+
+body.dark .status-complete {
+  color: #4ade80;
+}
+
+body.dark .empty-list {
+  background: #1a2439;
+  color: #8fa3c2;
+}
+
+body.dark .list-table-wrapper::-webkit-scrollbar-track {
+  background: #16213a;
+}
+
+body.dark .list-table-wrapper::-webkit-scrollbar-thumb {
+  background: #3a4d70;
+}
+
+body.dark .list-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #52648c;
+}
+
+body.dark .pagination {
+  background: #1a2439;
+  border-color: #314262;
+}
+
+body.dark .page-count {
+  color: #a9b8d0;
+}
+
+body.dark .page-btn {
+  background: #131d32;
+  border-color: #3a4d70;
+  color: #cfd9e9;
+}
+
+body.dark .page-dots {
+  color: #8294af;
+}
+
+body.dark .page-info {
+  color: #8fa3c2;
+}
+
+/* ─────────────────────────────────────
+   ADD INCOME / EXPENSE PAGE
+───────────────────────────────────── */
+
+body.dark .add-income-page {
+  background: #0f172a;
+}
+
+body.dark .add-income-title h2 {
+  color: #d5deec;
+}
+
+body.dark .add-income-title p {
+  color: #8fa3c2;
+}
+
+body.dark .form-error {
+  background: #3a1d24;
+  border-color: #5f2a33;
+  color: #f87171;
+}
+
+body.dark .income-expense-form {
+  background: #1a2439;
+  border-color: #314262;
+  color: #cfd9e9;
+}
+
+body.dark .floating-field input,
+body.dark .floating-field select,
+body.dark .dropdown-search-input {
+  background: #131d32;
+  border-color: #3a4d70;
+  color: #e7eef9;
+}
+
+body.dark .floating-field label,
+body.dark .small-field label {
+  background: #131d32;
+  color: #8294af;
+}
+
+body.dark .small-field input {
+  background: #131d32;
+  border-color: #3a4d70;
+  color: #e7eef9;
+}
+
+body.dark .check-label {
+  color: #c3d0e5;
+}
+
+body.dark .section-title {
+  background: #16213a;
+  border-bottom-color: #314262;
+  color: #7db3ff;
+}
+
+body.dark .search-dropdown {
+  background: #1a2439;
+  border-color: #3a4d70;
+}
+
+body.dark .dropdown-item {
+  color: #cfd9e9;
+  border-bottom-color: #26334f;
+}
+
+body.dark .dropdown-item:hover {
+  background: #213252;
+}
+
+body.dark .select-option {
+  color: #7db3ff;
+}
+
+body.dark .dropdown-empty {
+  color: #8294af;
+}
+
+body.dark .dropdown-group-label {
+  background: #22304c;
+  border-bottom-color: #314262;
+  color: #7db3ff;
+}
+
+body.dark .search-dropdown::-webkit-scrollbar-track {
+  background: #16213a;
+}
+
+body.dark .search-dropdown::-webkit-scrollbar-thumb {
+  background: #3a4d70;
+}
+
+/* User / Category select boxes (खाली white दिसत होतं) */
+
+body.dark .select-search-box {
+  background: #131d32;
+  border-color: #3a4d70;
+  color: #e7eef9;
+}
+
+body.dark .selected-value {
+  color: #e7eef9;
+}
+
+body.dark .placeholder-value {
+  color: #8294af;
+}
+
+body.dark .select-arrow {
+  color: #8fa3c2;
+}
+
+/* Notes textarea */
+
+body.dark .notes-field textarea {
+  background: #131d32;
+  border-color: #3a4d70;
+  color: #e7eef9;
+}
+
+/* भरलेल्या fields च्या वरच्या लहान label चा रंग (आधी #555 होता) */
+
+body.dark .floating-field:has(input:not(:placeholder-shown)) label,
+body.dark .floating-field:has(select) label,
+body.dark .floating-field:has(input[type="date"]) label,
+body.dark .floating-field:has(input[readonly]) label,
+body.dark .floating-field:has(.select-search-box .selected-value) label {
+  color: #a9b8d0;
+}
+
+/* ─────────────────────────────────────
+   LOGIN / REGISTER
+───────────────────────────────────── */
+
+body.dark .login-card {
+  background: #1a2439;
+}
+
+body.dark .logo {
+  background: #22304c;
+}
+
+body.dark .login-card h1 {
+  color: #7db3ff;
+}
+
+body.dark .subtitle {
+  color: #8fa3c2;
+}
+
+body.dark .input-box {
+  background: #131d32;
+  border-color: #3a4d70;
+}
+
+body.dark .input-box:focus-within {
+  background: #131d32;
+}
+
+body.dark .input-box input {
+  color: #e7eef9;
+}
+
+body.dark .input-box input::placeholder {
+  color: #64748b;
+}
+
+body.dark .icon {
+  color: #7db3ff;
+}
+
+body.dark .options {
+  color: #a9b8d0;
+}
+
+body.dark .options a,
+body.dark .register-text a {
+  color: #7db3ff;
+}
+
+body.dark .divider {
+  color: #8294af;
+}
+
+body.dark .divider span::before,
+body.dark .divider span::after {
+  background: #314262;
+}
+
+body.dark .google-btn {
+  background: #131d32;
+  border-color: #3a4d70;
+  color: #e7eef9;
+}
+
+body.dark .google-btn:hover {
+  background: #1c2d4d;
+}
+
+body.dark .register-text {
+  color: #a9b8d0;
+}
+
+body.dark .eye-btn {
+  color: #8294af;
+}
+
+/* ─────────────────────────────────────
+   SETTINGS (+ modals)
+───────────────────────────────────── */
+
+body.dark .settings-page {
+  background: #0f172a;
+}
+
+body.dark .settings-menu {
+  background: #35569c;
+}
+
+body.dark .settings-main {
+  background: #1a2439;
+  border-color: #314262;
+}
+
+body.dark .section-top h2 {
+  color: #d5deec;
+}
+
+body.dark .section-top p {
+  color: #8fa3c2;
+}
+
+body.dark .search-total input {
+  background: #131d32;
+  border-color: #3a4d70;
+  color: #e7eef9;
+}
+
+body.dark .total-badge {
+  border-color: #2f4a75;
+  color: #7db3ff;
+}
+
+body.dark .settings-table {
+  border-color: #314262;
+}
+
+body.dark .table-head {
+  background: #35569c;
+}
+
+body.dark .table-data {
+  background: #1a2439;
+  border-bottom-color: #26334f;
+  color: #cfd9e9;
+}
+
+body.dark .table-data:nth-child(odd) {
+  background: #1f2b45;
+}
+
+body.dark .table-data:hover {
+  background: #213252;
+}
+
+body.dark .empty-row {
+  color: #8294af;
+}
+
+body.dark .settings-modal {
+  background: #1a2439;
+}
+
+body.dark .modal-header {
+  border-bottom-color: #314262;
+}
+
+body.dark .modal-header h2 {
+  color: #d5deec;
+}
+
+body.dark .close-btn {
+  background: #22304c;
+  color: #cfd9e9;
+}
+
+body.dark .close-btn:hover {
+  background: #3a1d24;
+  color: #f87171;
+}
+
+body.dark .modal-form label {
+  color: #cfd9e9;
+}
+
+body.dark .modal-form label small {
+  color: #8294af;
+}
+
+body.dark .modal-form input,
+body.dark .modal-form select {
+  background: #131d32;
+  border-color: #3a4d70;
+  color: #e7eef9;
+}
+
+body.dark .cancel-btn {
+  background: #22304c;
+  color: #cfd9e9;
+}
+
+body.dark .cancel-btn:hover {
+  background: #2a3a5c;
+}

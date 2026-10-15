@@ -15,10 +15,10 @@ import {
 
 import "../../css/Charts.css";
 
-function IncomeCategoryChart({ transactions = [] }) {
-  // view: INCOME / EXPENSE
-  // (Assets & Liabilities चा वेगळा chart आहे — AssetsLiabilityChart.jsx)
+import { fmtAxis } from "../../utils/format";
 
+// Y-axis compact format: ₹1k, ₹2.5L, ₹16Cr (tooltip मध्ये exact amount येतच राहतो)
+function IncomeCategoryChart({ transactions = [] }) {
   const [view, setView] = useState("INCOME");
 
   const [chartMode, setChartMode] = useState("PIE");
@@ -46,10 +46,6 @@ function IncomeCategoryChart({ transactions = [] }) {
     date.setHours(0, 0, 0, 0);
     return date;
   }, []);
-
-  /*=========================
-       TIMEFRAME FILTER
-  =========================*/
 
   const filteredTransactions = useMemo(() => {
     if (activeTimeframe === "All") {
@@ -94,11 +90,6 @@ function IncomeCategoryChart({ transactions = [] }) {
     return transactions;
   }, [transactions, activeTimeframe, today]);
 
-  /*=========================
-       CATEGORY DATA
-       (Income / Expense)
-  =========================*/
-
   const chartData = useMemo(() => {
     const type =
       view === "INCOME" ? "Income" : view === "EXPENSE" ? "Expense" : null;
@@ -118,10 +109,6 @@ function IncomeCategoryChart({ transactions = [] }) {
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value);
   }, [filteredTransactions, view]);
-
-  /*=========================
-       VIEW CONFIG
-  =========================*/
 
   const headerTitle =
     view === "INCOME"
@@ -188,8 +175,6 @@ function IncomeCategoryChart({ transactions = [] }) {
         </div>
       </div>
 
-      {/* VIEW TABS — Income / Expense */}
-
       <div className="chart-controls">
         <div className="chart-toggle-group">
           <button
@@ -213,8 +198,6 @@ function IncomeCategoryChart({ transactions = [] }) {
             Expense by Category
           </button>
         </div>
-
-        {/* TIMEFRAME — chart मधला स्वतःचा dropdown */}
 
         <select
           className="chart-timeframe-select"
@@ -288,7 +271,7 @@ function IncomeCategoryChart({ transactions = [] }) {
                 <XAxis
                   type="number"
                   tick={{ fontSize: 11 }}
-                  tickFormatter={(value) => `₹${value}`}
+                  tickFormatter={fmtAxis}
                 />
 
                 <YAxis
